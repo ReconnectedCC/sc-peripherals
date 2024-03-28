@@ -9,6 +9,7 @@ import net.minecraft.SharedConstants
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
 import net.minecraft.util.math.Direction
+import net.minecraft.util.math.Vec3d
 import net.minecraft.util.shape.VoxelShape
 
 const val MAX_LABEL_LENGTH = 48
@@ -31,6 +32,8 @@ data class PrintData(
 
   val shapesOff: Shapes = Shapes(),
   val shapesOn : Shapes = Shapes(),
+
+  var seatPos: Vec3d? = null,
 ) {
   var label: String? = initialLabel
     set(value) {
@@ -70,6 +73,7 @@ data class PrintData(
 
   fun toNbt(): NbtCompound {
     val nbt = NbtCompound()
+
     nbt.putOptString("label", sanitiseLabel(label))
     nbt.putOptString("tooltip", sanitiseTooltip(tooltip))
     nbt.putBoolean("isButton", isButton)
@@ -83,6 +87,13 @@ data class PrintData(
     nbt.putBoolean("isQuiet", isQuiet)
     nbt.put("shapesOff", shapesOff.toNbt())
     nbt.put("shapesOn", shapesOn.toNbt())
+
+    seatPos?.let {
+      nbt.putDouble("seatX", it.x)
+      nbt.putDouble("seatY", it.y)
+      nbt.putDouble("seatZ", it.z)
+    }
+
     return nbt
   }
 
@@ -91,7 +102,7 @@ data class PrintData(
     val noclipCostMultiplier: Int = config.get("printer.noclip_cost_multiplier")
 
     fun fromNbt(nbt: NbtCompound) = PrintData(
-      initialLabel   = nbt.optString("label")?.takeIf { isValidLabel(it) },     // Cheaper than sanitiseLabel
+      initialLabel   = nbt.optString("label")?.takeIf { isValidLabel(it) }, // Cheaper than sanitiseLabel
       tooltip        = nbt.optString("tooltip")?.takeIf { isValidTooltip(it) },
       isButton       = nbt.getBoolean("isButton"),
       collideWhenOn  = nbt.getBoolean("collideWhenOn"),
@@ -104,12 +115,21 @@ data class PrintData(
       isQuiet        = nbt.getBoolean("isQuiet"),
       shapesOff      = nbt.getShapeSet("shapesOff"),
       shapesOn       = nbt.getShapeSet("shapesOn"),
+      seatPos        = nbt.getSeatPos()?.takeIf { isValidSeatPos(it) }
     )
 
     private fun NbtCompound.getShapeSet(key: String): Shapes =
       getList(key, COMPOUND)
         .map { Shape.fromNbt(it as NbtCompound) }
         .toCollection(Shapes())
+
+    private fun NbtCompound.getSeatPos(): Vec3d? {
+      if (!contains("seatX") || !contains("seatY") || !contains("seatZ")) return null
+      val x = getDouble("seatX")
+      val y = getDouble("seatY")
+      val z = getDouble("seatZ")
+      return if (x.isFinite() && y.isFinite() && z.isFinite()) Vec3d(x, y, z) else null
+    }
 
     private fun isValidLabel(s: String?) = s?.length in 1..MAX_LABEL_LENGTH
     private fun isValidTooltip(s: String?) = s?.length in 1..MAX_TOOLTIP_LENGTH
@@ -123,5 +143,8 @@ data class PrintData(
      * private-use font characters, but let's allow the Krist symbol (U+E000) */
     private fun stripInvalidChars(s: String, allowNewlines: Boolean = false) =
       s.filter { SharedConstants.isValidChar(it) || it == '§' || it == '\uE000' || (allowNewlines && it == '\n') }
+
+    fun isValidSeatPos(pos: Vec3d) =
+      pos.x in 0.1..0.9 && pos.y in 0.1..0.9 && pos.z in 0.1..0.9
   }
 }

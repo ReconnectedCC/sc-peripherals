@@ -135,6 +135,12 @@ local function commitPrint(data)
   printer.setRedstoneLevel(data.redstoneLevel or 0)
   printer.setLightLevel(data.lightLevel or 0)
 
+  if data.seatPos and #data.seatPos == 3 then
+    printer.setSeatPos(data.seatPos[1], data.seatPos[2], data.seatPos[3])
+  else
+    printer.setSeatPos(0, 0, 0)
+  end
+
   local shapes = {}
   for _, shape in ipairs(data.shapesOff) do
     addShape(shapes, shape, false)

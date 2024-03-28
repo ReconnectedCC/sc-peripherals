@@ -15,6 +15,7 @@ import io.sc3.peripherals.prints.Shape
 import io.sc3.peripherals.util.InventoryPeripheral
 import io.sc3.peripherals.util.getTableInt
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.Vec3d
 import java.nio.charset.StandardCharsets
 import java.util.*
 
@@ -90,6 +91,25 @@ class PrinterPeripheral(val be: PrinterBlockEntity) : InventoryPeripheral(be) {
   fun setStateLighting(lightWhenOff: Boolean, lightWhenOn: Boolean) {
     be.data.lightWhenOff = lightWhenOff
     be.data.lightWhenOn = lightWhenOn
+    be.dataUpdated()
+  }
+
+  @LuaFunction(mainThread = true)
+  fun getSeatPos(): MethodResult = be.data.seatPos?.let { of(it.x, it.y, it.z) } ?: of(null, null, null)
+
+  @LuaFunction(mainThread = true)
+  fun setSeatPos(x: Optional<Double>, y: Optional<Double>, z: Optional<Double>) {
+    val pos = if (x.isPresent && y.isPresent && z.isPresent) {
+      Vec3d(x.orElse(0.5), y.orElse(0.5), z.orElse(0.5)).also {
+        if (!PrintData.isValidSeatPos(it)) {
+          throw LuaException("Seat position must be between 0.1 and 0.9 on all axes")
+        }
+      }
+    } else {
+      null
+    }
+
+    be.data.seatPos = pos
     be.dataUpdated()
   }
   

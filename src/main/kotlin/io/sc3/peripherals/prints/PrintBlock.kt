@@ -1,5 +1,6 @@
 package io.sc3.peripherals.prints
 
+import io.sc3.library.SeatBlock
 import io.sc3.library.WaterloggableBlock
 import io.sc3.library.WaterloggableBlock.Companion.waterlogged
 import io.sc3.peripherals.Registration.ModBlockEntities
@@ -30,6 +31,7 @@ import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
+import net.minecraft.util.math.Vec3d
 import net.minecraft.util.math.random.Random
 import net.minecraft.util.shape.VoxelShape
 import net.minecraft.util.shape.VoxelShapes
@@ -37,7 +39,7 @@ import net.minecraft.world.BlockView
 import net.minecraft.world.World
 import net.minecraft.world.WorldAccess
 
-class PrintBlock(settings: Settings) : BaseBlockWithEntity(settings), WaterloggableBlock {
+class PrintBlock(settings: Settings) : BaseBlockWithEntity(settings), WaterloggableBlock, SeatBlock {
   init {
     defaultState = defaultState
       .with(facing, Direction.NORTH)
@@ -158,6 +160,14 @@ class PrintBlock(settings: Settings) : BaseBlockWithEntity(settings), Waterlogga
     neighborUpdate(state, world,  pos)
     return super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos)
   }
+
+  override fun canSitOn(world: World, pos: BlockPos, state: BlockState, hitResult: BlockHitResult?,
+                        player: PlayerEntity?) =
+    blockEntity(world, pos)?.data?.seatPos?.let { ActionResult.SUCCESS } ?: ActionResult.FAIL
+
+  override fun getSeatPos(world: World, pos: BlockPos, state: BlockState): Vec3d =
+    Vec3d(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
+      .add(blockEntity(world, pos)?.data?.seatPos ?: Vec3d(0.5, 0.5, 0.5))
 
   companion object {
     val id = ModId("block/print")
