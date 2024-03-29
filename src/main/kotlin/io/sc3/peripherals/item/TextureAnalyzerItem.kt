@@ -28,7 +28,7 @@ class TextureAnalyzerItem(settings: Settings) : BaseItem("texture_analyzer", set
     // Iterate all the directions, and null, because BasicBlockModels only return sprites if they are given a valid
     // face, and other custom models may return different values if they are passed `null`. We want to get as many
     // textures as possible.
-    val sides = listOf(*Direction.values(), null)
+    val sides = listOf(*Direction.entries.toTypedArray(), null)
     val sprites = sides.flatMap {
       model.getQuads(blockState, it, rand)
         .mapNotNull { quad -> quad.sprite?.contents?.id?.toString() }

@@ -126,7 +126,7 @@ class PrintBakedModel(
     val faces = bounds.faces
 
     // Render each quad of the cube
-    for (dir in Direction.values()) {
+    for (dir in Direction.entries) {
       // TODO: Since we are not using QuadEmitter.square(), we need to do the cullFace check ourselves
       val face = faces[dir.ordinal]
       emitter.cullFace(null)
