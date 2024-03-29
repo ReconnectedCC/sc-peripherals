@@ -138,7 +138,7 @@ local function commitPrint(data)
   if data.seatPos and #data.seatPos == 3 then
     printer.setSeatPos(data.seatPos[1], data.seatPos[2], data.seatPos[3])
   else
-    printer.setSeatPos(0, 0, 0)
+    printer.setSeatPos(nil, nil, nil)
   end
 
   local shapes = {}
