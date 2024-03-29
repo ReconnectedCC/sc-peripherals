@@ -167,7 +167,14 @@ class PrintBlock(settings: Settings) : BaseBlockWithEntity(settings), Waterlogga
 
   override fun getSeatPos(world: World, pos: BlockPos, state: BlockState): Vec3d =
     Vec3d(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
-      .add(blockEntity(world, pos)?.data?.seatPos ?: Vec3d(0.5, 0.5, 0.5))
+      .add(
+        (blockEntity(world, pos)?.data?.seatPos ?: Vec3d(0.5, 0.5, 0.5))
+          .subtract(0.5, 0.5, 0.5)
+          .rotateY(state.get(facing).asRotation() * Math.PI.toFloat() / 180.0f)
+          // Minecraft can't decide which direction the Z axis goes between world code and rendering code :D
+          .multiply(1.0, 1.0, -1.0)
+          .add(0.5, 0.5, 0.5)
+      )
 
   companion object {
     val id = ModId("block/print")
