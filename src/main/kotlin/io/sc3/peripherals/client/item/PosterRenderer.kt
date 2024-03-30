@@ -16,6 +16,7 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.ItemFrameEntity
 import net.minecraft.item.ItemStack
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.RotationAxis
 import net.minecraft.world.World
 import org.joml.Matrix4f
@@ -57,7 +58,7 @@ object PosterRenderer : AutoCloseable {
     getPosterTexture(id, state).drawCropped(matrices, vertexConsumers, light, cropX, cropY, cropWidth, cropHeight)
   }
 
-  private fun getPosterTexture(id: String, state: PosterState): PosterTexture
+  fun getPosterTexture(id: String, state: PosterState): PosterTexture
     = posterTextures
         .computeIfAbsent(id) { PosterTexture(id, state) }
         .also { it.setState(state) }
@@ -137,15 +138,15 @@ object PosterRenderer : AutoCloseable {
   }
 
   @Environment(EnvType.CLIENT)
-  internal class PosterTexture(id: String, private var state: PosterState) :
-    AutoCloseable {
+  class PosterTexture(id: String, private var state: PosterState) : AutoCloseable {
     private val texture: NativeImageBackedTexture = NativeImageBackedTexture(128, 128, true)
     private val renderLayer: RenderLayer
     private var needsUpdate = true
 
+    val textureId: Identifier = textureManager.registerDynamicTexture("poster/$id", texture)
+
     init {
-      val identifier = textureManager.registerDynamicTexture("poster/$id", texture)
-      renderLayer = RenderLayer.getText(identifier)
+      renderLayer = RenderLayer.getText(textureId)
     }
 
     fun setState(state: PosterState) {
@@ -156,6 +157,13 @@ object PosterRenderer : AutoCloseable {
 
     fun setNeedsUpdate() {
       needsUpdate = true
+    }
+
+    fun updateIfNeeded() {
+      if (needsUpdate) {
+        this.updateTexture()
+        needsUpdate = false
+      }
     }
 
     private fun getRenderColor(colorIndex: Int): Int {
@@ -183,10 +191,7 @@ object PosterRenderer : AutoCloseable {
     }
 
     fun draw(matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, light: Int, doubleSided: Boolean) {
-      if (needsUpdate) {
-        this.updateTexture()
-        needsUpdate = false
-      }
+      updateIfNeeded()
 
       val matrix4f = matrices.peek().positionMatrix
       val vertexConsumer = vertexConsumers.getBuffer(renderLayer)
