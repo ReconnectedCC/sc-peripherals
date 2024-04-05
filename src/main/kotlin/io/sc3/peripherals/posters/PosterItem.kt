@@ -13,6 +13,7 @@ import net.minecraft.client.gui.tooltip.TooltipComponent
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.client.item.TooltipData
 import net.minecraft.client.render.BufferBuilder
+import net.minecraft.client.render.LightmapTextureManager.MAX_LIGHT_COORDINATE
 import net.minecraft.client.render.Tessellator
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.item.ItemStack
@@ -69,7 +70,7 @@ class PosterItem(settings: Settings) : BaseItem("poster", settings) {
       ctx.drawTexture(POSTER_BACKGROUND_RES, -pad, -pad, -1, 0f, 0f, size, size, size, size)
       val buffer: BufferBuilder = Tessellator.getInstance().buffer
       val immediateBuffer = VertexConsumerProvider.immediate(buffer)
-      PosterRenderer.draw(matrices, immediateBuffer, posterId, posterState, 240)
+      PosterRenderer.draw(matrices, immediateBuffer, posterId, posterState, MAX_LIGHT_COORDINATE)
       immediateBuffer.draw()
       matrices.pop()
     }
