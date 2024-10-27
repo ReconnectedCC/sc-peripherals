@@ -1,15 +1,12 @@
-import net.darkhax.curseforgegradle.TaskPublishCurseForge
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   val kotlinVersion: String by System.getProperties()
   kotlin("jvm").version(kotlinVersion)
 
-  id("fabric-loom") version "1.6-SNAPSHOT"
+  id("fabric-loom") version "1.7-SNAPSHOT"
   id("maven-publish")
   id("signing")
-  id("com.modrinth.minotaur") version "2.+"
-  id("net.darkhax.curseforgegradle") version "1.0.11"
 }
 
 val modVersion: String by project
@@ -42,7 +39,7 @@ group = mavenGroup
 
 tasks.withType<KotlinCompile>().configureEach {
   kotlinOptions {
-    jvmTarget = "17"
+    jvmTarget = "21"
     apiVersion = "1.9"
     languageVersion = "1.9"
   }
@@ -56,13 +53,13 @@ repositories {
   }
 
   maven {
-    url = uri("https://repo.lem.sh/releases")
+    url = uri("https://maven.reconnected.cc/releases")
     content {
       includeGroup("io.sc3")
     }
   }
 
-  maven("https://squiddev.cc/maven") {
+  maven("https://maven.squiddev.cc") {
     content {
       includeGroup("cc.tweaked")
       includeModule("org.squiddev", "Cobalt")
@@ -178,52 +175,6 @@ tasks {
   }
 }
 
-modrinth {
-  token.set(findProperty("modrinthApiKey") as String? ?: "")
-  projectId.set("OvQeJciX")
-  versionNumber.set("$minecraftVersion-$modVersion")
-  versionName.set(modVersion)
-  versionType.set("release")
-  uploadFile.set(tasks.remapJar as Any)
-  changelog.set("Release notes can be found on the [GitHub repository](https://github.com/SwitchCraftCC/sc-peripherals/commits/$minecraftVersion).")
-  gameVersions.add(minecraftVersion)
-  loaders.add("fabric")
-
-  syncBodyFrom.set(provider {
-    file("README.md").readText()
-      .replace("img/header.png", "https://cdn.modrinth.com/data/OvQeJciX/images/ba615a2fdb61b935fc7aab15ed69291a7b32b266.png")
-  })
-
-  dependencies {
-    required.project("fabric-api")
-    required.project("fabric-language-kotlin")
-    required.project("cc-tweaked")
-  }
-}
-
-tasks.modrinth { dependsOn(tasks.modrinthSyncBody) }
-tasks.publish { dependsOn(tasks.modrinth) }
-
-val publishCurseForge by tasks.registering(TaskPublishCurseForge::class) {
-  group = PublishingPlugin.PUBLISH_TASK_GROUP
-  description = "Upload artifacts to CurseForge"
-
-  apiToken = findProperty("curseForgeApiKey") as String? ?: ""
-  enabled = apiToken != ""
-
-  val mainFile = upload("807669", tasks.remapJar.get().archiveFile)
-  dependsOn(tasks.remapJar)
-  mainFile.releaseType = "release"
-  mainFile.changelog = "Release notes can be found on the [GitHub repository](https://github.com/SwitchCraftCC/sc-peripherals/commits/$minecraftVersion)."
-  mainFile.changelogType = "markdown"
-  mainFile.addGameVersion(minecraftVersion)
-  mainFile.addRequirement("fabric-api")
-  mainFile.addRequirement("fabric-language-kotlin")
-  mainFile.addRequirement("cc-tweaked")
-}
-
-tasks.publish { dependsOn(publishCurseForge) }
-
 publishing {
   publications {
     register("mavenJava", MavenPublication::class) {
@@ -233,8 +184,8 @@ publishing {
 
   repositories {
     maven {
-      name = "lemmmyRepo"
-      url = uri("https://repo.lem.sh/releases")
+      name = "reconnectedRepo"
+      url = uri("https://maven.reconnected.cc/releases")
 
       if (!System.getenv("MAVEN_USERNAME").isNullOrEmpty()) {
         credentials {
