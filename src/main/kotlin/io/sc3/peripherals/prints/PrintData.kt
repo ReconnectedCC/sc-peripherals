@@ -1,9 +1,15 @@
 package io.sc3.peripherals.prints
 
+import com.mojang.serialization.Codec
+import com.mojang.serialization.MapCodec
+import com.mojang.serialization.codecs.RecordCodecBuilder
 import io.sc3.library.ext.optBoolean
 import io.sc3.library.ext.optString
 import io.sc3.library.ext.putOptString
 import io.sc3.peripherals.config.ScPeripheralsConfig.config
+import io.sc3.peripherals.prints.PrintData.Companion.getSeatPos
+import io.sc3.peripherals.prints.PrintData.Companion.getShapeSet
+import jdk.jfr.Frequency
 import net.fabricmc.fabric.api.util.NbtType.COMPOUND
 import net.minecraft.SharedConstants
 import net.minecraft.nbt.NbtCompound
@@ -101,6 +107,22 @@ data class PrintData(
   companion object {
     val customRedstoneCost: Int = config.get("printer.custom_redstone_cost")
     val noclipCostMultiplier: Int = config.get("printer.noclip_cost_multiplier")
+
+    val CODEC: MapCodec<Frequency> = RecordCodecBuilder.mapCodec { i ->
+      i.group(
+        Codec.STRING.optionalFieldOf("label"), // Cheaper than sanitiseLabel
+        Codec.STRING.optionalFieldOf("tooltip"),
+        Codec.BOOL.fieldOf("isButton"),
+        Codec.BOOL.fieldOf("collideWhenOn"),
+        Codec.BOOL.fieldOf("collideWhenOff"),
+        Codec.BOOL.optionalFieldOf("lightWhenOn2"),
+        Codec.BOOL.optionalFieldOf("lightWhenOff2"),
+        Codec.INT.fieldOf("lightLevel"),
+        Codec.INT.fieldOf("redstoneLevel"),
+        Codec.BOOL.fieldOf("isBeaconBlock"),
+        Codec.BOOL.fieldOf("isQuiet")
+      ).apply(i, ::PrintData)
+    }
 
     fun fromNbt(nbt: NbtCompound) = PrintData(
       initialLabel   = nbt.optString("label")?.takeIf { isValidLabel(it) }, // Cheaper than sanitiseLabel

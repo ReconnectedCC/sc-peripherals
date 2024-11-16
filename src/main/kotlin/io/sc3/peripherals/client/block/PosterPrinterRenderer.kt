@@ -202,14 +202,13 @@ object PosterPrinterRenderer : BlockEntityRenderer<PosterPrinterBlockEntity> {
 
     val entry = matrices.peek()
     val matrix = entry.positionMatrix
-    val normalMatrix = entry.normalMatrix
-    vertex(matrix, normalMatrix, consumer, x0, y0, z, u0, v1, light, overlay)
-    vertex(matrix, normalMatrix, consumer, x1, y0, z, u1, v1, light, overlay)
-    vertex(matrix, normalMatrix, consumer, x1, y1, z, u1, v0, light, overlay)
-    vertex(matrix, normalMatrix, consumer, x0, y1, z, u0, v0, light, overlay)
+    vertex(matrix, entry, consumer, x0, y0, z, u0, v1, light, overlay)
+    vertex(matrix, entry, consumer, x1, y0, z, u1, v1, light, overlay)
+    vertex(matrix, entry, consumer, x1, y1, z, u1, v0, light, overlay)
+    vertex(matrix, entry, consumer, x0, y1, z, u0, v0, light, overlay)
   }
 
-  private fun vertex(matrix: Matrix4f, normalMatrix: Matrix3f, vertexConsumer: VertexConsumer,
+  private fun vertex(matrix: Matrix4f, normalMatrix: MatrixStack.Entry, vertexConsumer: VertexConsumer,
                      x: Float, y: Float, z: Float, u: Float, v: Float, light: Int, overlay: Int) {
     vertexConsumer
       .vertex(matrix, 1.0f - x, y, z)
@@ -218,7 +217,6 @@ object PosterPrinterRenderer : BlockEntityRenderer<PosterPrinterBlockEntity> {
       .overlay(overlay)
       .light(light)
       .normal(normalMatrix, 1.0f, 0.0f, 0.0f)
-      .next()
   }
 
   private val modelData by lazy {

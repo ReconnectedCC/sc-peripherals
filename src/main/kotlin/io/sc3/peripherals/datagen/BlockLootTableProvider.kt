@@ -8,8 +8,12 @@ import net.minecraft.loot.LootPool
 import net.minecraft.loot.LootTable
 import net.minecraft.loot.entry.DynamicEntry
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider
+import net.minecraft.registry.RegistryWrapper
+import java.util.concurrent.CompletableFuture
 
-class BlockLootTableProvider(out: FabricDataOutput) : FabricBlockLootTableProvider(out) {
+class BlockLootTableProvider(out: FabricDataOutput,
+                             registryLookup: CompletableFuture<RegistryWrapper.WrapperLookup>
+) : FabricBlockLootTableProvider(out, registryLookup) {
   override fun generate() {
     addDrop(ModBlocks.printer)
     addDrop(

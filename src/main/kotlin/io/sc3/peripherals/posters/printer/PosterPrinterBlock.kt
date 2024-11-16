@@ -33,7 +33,7 @@ import net.minecraft.world.BlockView
 import net.minecraft.world.World
 import net.minecraft.world.WorldAccess
 
-class PosterPrinterBlock(settings: Settings) : BaseBlockWithEntity(settings), WaterloggableBlock {
+ class PosterPrinterBlock(settings: Settings) : BaseBlockWithEntity(settings), WaterloggableBlock {
   init {
     defaultState = defaultState
       .with(facing, Direction.NORTH)
@@ -51,8 +51,13 @@ class PosterPrinterBlock(settings: Settings) : BaseBlockWithEntity(settings), Wa
 
   override fun getRenderType(state: BlockState?) = BlockRenderType.ENTITYBLOCK_ANIMATED
 
-  override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand,
-                     hit: BlockHitResult): ActionResult {
+  override fun onUse(
+    state: BlockState,
+    world: World,
+    pos: BlockPos,
+    player: PlayerEntity,
+    hit: BlockHitResult
+  ): ActionResult? {
     if (!world.isClient) {
       val factory = state.createScreenHandlerFactory(world, pos)
       factory?.let { player.openHandledScreen(it) }

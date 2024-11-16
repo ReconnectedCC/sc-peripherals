@@ -25,6 +25,7 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.listener.ClientPlayPacketListener
 import net.minecraft.network.packet.Packet
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
@@ -37,6 +38,7 @@ import net.minecraft.world.World
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.jvm.optionals.getOrNull
 
 class PosterPrinterBlockEntity(
   pos: BlockPos,
@@ -255,16 +257,16 @@ class PosterPrinterBlockEntity(
 
   override fun getDisplayName(): Text = Text.translatable(cachedState.block.translationKey)
 
-  override fun readNbt(nbt: NbtCompound) {
-    super.readNbt(nbt)
+  override fun readNbt(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup) {
+    super.readNbt(nbt, registryLookup)
 
     inventory.clear()
-    Inventories.readNbt(nbt, inventory)
+    Inventories.readNbt(nbt, inventory, registryLookup)
 
     data = PosterPrintData.fromNbt(nbt.getCompound("data"))
     printing = nbt.getBoolean("printing")
     printCount = nbt.getInt("printCount")
-    outputStack = nbt.optCompound("outputStack")?.let { ItemStack.fromNbt(it) } ?: ItemStack.EMPTY
+    outputStack = (nbt.optCompound("outputStack")?.let { ItemStack.fromNbt(registryLookup, it) })?.getOrNull() ?: ItemStack.EMPTY
 
     ink = nbt.getInt("ink")
     printProgress = nbt.getInt("printProgress")

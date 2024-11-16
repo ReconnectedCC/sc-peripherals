@@ -1,13 +1,18 @@
 package io.sc3.peripherals.prints
 
-import net.minecraft.nbt.NbtList
-import net.minecraft.util.math.Direction
-import net.minecraft.util.shape.VoxelShape
-import net.minecraft.util.shape.VoxelShapes
+import com.mojang.serialization.DataResult
+import com.mojang.serialization.MapCodec
+import com.mojang.serialization.codecs.RecordCodecBuilder
 import io.sc3.library.ext.rotateTowards
 import io.sc3.library.ext.surfaceArea
 import io.sc3.library.ext.toDiv16VoxelShape
 import io.sc3.library.ext.volume
+import net.minecraft.nbt.NbtList
+import net.minecraft.util.math.Direction
+import net.minecraft.util.shape.VoxelShape
+import net.minecraft.util.shape.VoxelShapes
+import java.util.stream.Collectors
+
 
 class Shapes : HashSet<Shape>() {
   private val hashCode by lazy { super.hashCode() }

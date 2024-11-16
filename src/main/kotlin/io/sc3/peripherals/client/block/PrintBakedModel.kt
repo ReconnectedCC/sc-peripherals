@@ -36,6 +36,7 @@ import net.minecraft.util.math.random.Random
 import net.minecraft.world.BlockRenderView
 import org.cache2k.Cache2kBuilder
 import java.util.function.Supplier
+import kotlin.jvm.optionals.getOrNull
 
 class PrintBakedModel(
   private val sprite: Sprite
@@ -71,7 +72,7 @@ class PrintBakedModel(
     // If the renderer is null, return missingModel before trying to do anything else
     // Quick-fail for completely empty item stacks (REI, JEI, etc)
     val builder = meshBuilder.get()
-    if (builder == null || !stack.hasNbt()) {
+    if (builder == null) {
       missingModel.emitItemQuads(stack, randomSupplier, ctx)
       return
     }
@@ -117,9 +118,9 @@ class PrintBakedModel(
     val texture = shape.texture
 
     // Discard original alpha component, then set it back to full alpha
-    val tint = ((shape.tint ?: 0xFFFFFF) and 0xFFFFFF) or 0xFF000000.toInt()
+    val tint = ((shape.tint.getOrNull() ?: 0xFFFFFF) and 0xFFFFFF) or 0xFF000000.toInt()
 
-    val spriteIdentifier = SpriteIdentifier(BLOCK_ATLAS_TEXTURE, texture)
+    val spriteIdentifier = SpriteIdentifier(BLOCK_ATLAS_TEXTURE, texture.getOrNull())
     val sprite = spriteIdentifier.sprite
 
     // Generate the 6 faces for this Box, as a list of four vertices

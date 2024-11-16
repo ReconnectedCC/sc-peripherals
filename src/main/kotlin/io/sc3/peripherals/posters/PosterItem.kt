@@ -1,6 +1,7 @@
 package io.sc3.peripherals.posters
 
 import com.mojang.blaze3d.systems.RenderSystem
+import io.sc3.peripherals.Registration
 import io.sc3.peripherals.Registration.ModItems
 import io.sc3.peripherals.client.item.PosterRenderer
 import io.sc3.peripherals.client.item.PosterRenderer.POSTER_BACKGROUND_RES
@@ -10,13 +11,14 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.tooltip.TooltipComponent
-import net.minecraft.client.item.TooltipContext
-import net.minecraft.client.item.TooltipData
+
 import net.minecraft.client.render.BufferBuilder
 import net.minecraft.client.render.LightmapTextureManager.MAX_LIGHT_COORDINATE
 import net.minecraft.client.render.Tessellator
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.item.ItemStack
+import net.minecraft.item.tooltip.TooltipData
+import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtIo
@@ -35,13 +37,13 @@ class PosterItem(settings: Settings) : BaseItem("poster", settings) {
 
   override fun getName(stack: ItemStack): Text = printData(stack)?.labelText ?: super.getName(stack)
 
-  override fun appendTooltip(stack: ItemStack, world: World?, tooltip: MutableList<Text>, context: TooltipContext) {
+  override fun appendTooltip(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Text>, type: TooltipType) {
     val id = getPosterId(stack)
 
     val data = printData(stack) ?: return
     data.tooltip?.let { tooltip.add(Text.literal(it)) }
 
-    if (context.isAdvanced) {
+    if (type.isAdvanced) {
       if (id != null) {
         tooltip.add(Text.translatable("${translationKey}.id", id.take(8)).formatted(Formatting.GRAY))
       } else {
@@ -179,9 +181,7 @@ class PosterItem(settings: Settings) : BaseItem("poster", settings) {
     }
 
     fun getPosterId(stack: ItemStack?): String? {
-      return stack?.nbt?.let {
-        if (it.contains(POSTER_KEY, NbtElement.STRING_TYPE.toInt())) it.getString(POSTER_KEY) else null
-      }
+      return stack?.get(Registration.ModComponents.POSTER_KEY)
     }
 
     fun getPosterState(id: String?, world: World?): PosterState? {

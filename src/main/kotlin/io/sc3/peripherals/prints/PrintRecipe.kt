@@ -8,14 +8,15 @@ import net.minecraft.recipe.Ingredient.ofItems
 import net.minecraft.recipe.SpecialCraftingRecipe
 import net.minecraft.recipe.SpecialRecipeSerializer
 import net.minecraft.recipe.book.CraftingRecipeCategory
+import net.minecraft.recipe.input.CraftingRecipeInput
 import net.minecraft.registry.DynamicRegistryManager
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.util.Identifier
 import net.minecraft.world.World
 
 class PrintRecipe(
-  id: Identifier,
   category: CraftingRecipeCategory = CraftingRecipeCategory.MISC
-) : SpecialCraftingRecipe(id, category) {
+) : SpecialCraftingRecipe(category) {
   private val outputItem = ItemStack(ModItems.print)
 
   private val print = ofItems(ModItems.print)
@@ -24,11 +25,11 @@ class PrintRecipe(
   private val beaconBlocks = ofItems(IRON_BLOCK, GOLD_BLOCK, DIAMOND_BLOCK, EMERALD_BLOCK)
   private val honeyBlock = ofItems(HONEY_BLOCK)
 
-  private fun items(inv: RecipeInputInventory): RecipeItems? {
+  private fun items(inv: CraftingRecipeInput): RecipeItems? {
     val items = RecipeItems()
 
-    for (i in 0 until inv.size()) {
-      val stack = inv.getStack(i)
+    for (i in 0 until inv.size) {
+      val stack = inv.getStackInSlot(i)
       if (stack.isEmpty) continue
 
       when {
@@ -72,13 +73,13 @@ class PrintRecipe(
     return items
   }
 
-  override fun matches(inv: RecipeInputInventory, world: World) =
-    items(inv) != null
+  override fun matches(input: CraftingRecipeInput, world: World): Boolean =
+    items(input) != null
 
-  override fun craft(inv: RecipeInputInventory, manager: DynamicRegistryManager): ItemStack {
+  override fun craft(input: CraftingRecipeInput, lookup: RegistryWrapper.WrapperLookup): ItemStack? {
     // Validate the crafting inputs and calculate what needs to be modified. Refuse to craft if any resources will be
     // wasted.
-    val items = items(inv) ?: return ItemStack.EMPTY
+    val items = items(input) ?: return ItemStack.EMPTY
     val print = items.print ?: return ItemStack.EMPTY
 
     val result = print.copyWithCount(1)
@@ -97,7 +98,7 @@ class PrintRecipe(
 
   override fun fits(width: Int, height: Int) = width * height >= 2
   override fun getSerializer() = recipeSerializer
-  override fun getOutput(manager: DynamicRegistryManager) = outputItem
+  //fun getOutput(manager: DynamicRegistryManager) = outputItem
   override fun isIgnoredInRecipeBook() = true
 
   data class RecipeItems(

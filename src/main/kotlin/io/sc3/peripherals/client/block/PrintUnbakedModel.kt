@@ -11,7 +11,7 @@ import net.minecraft.util.Identifier
 import java.util.function.Function
 
 class PrintUnbakedModel : UnbakedModel {
-  private val particleSprite = SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, Identifier("block/stone"))
+  private val particleSprite = SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, Identifier.of("block/stone"))
 
   override fun getModelDependencies(): MutableCollection<Identifier> = mutableSetOf()
 
@@ -19,8 +19,11 @@ class PrintUnbakedModel : UnbakedModel {
     // TODO
   }
 
-  override fun bake(baker: Baker, textureGetter: Function<SpriteIdentifier, Sprite>,
-                    rotationContainer: ModelBakeSettings, modelId: Identifier): BakedModel {
+  override fun bake(
+    baker: Baker,
+    textureGetter: Function<SpriteIdentifier, Sprite>,
+    rotationContainer: ModelBakeSettings
+  ): BakedModel {
     // The actual quads are generated in PrintBakedModel as this needs to be done dynamically for each block entity
     // or item stack. Just load the particle sprite here.
     val sprite = textureGetter.apply(particleSprite)

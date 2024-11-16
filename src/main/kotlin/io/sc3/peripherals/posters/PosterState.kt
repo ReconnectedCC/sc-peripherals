@@ -1,6 +1,7 @@
 package io.sc3.peripherals.posters
 
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.world.PersistentState
 import java.io.File
 
@@ -8,9 +9,9 @@ class PosterState : PersistentState() {
   var colors = ByteArray(16384)
   var palette = getDefaultPalette() // Default to map colors
 
-  override fun save(file: File) {
+  override fun save(file: File, registryLookup: RegistryWrapper.WrapperLookup) {
     file.parentFile.mkdirs()
-    super.save(file)
+    super.save(file, registryLookup)
   }
 
   fun setColor(x: Int, z: Int, color: Byte) {
@@ -34,7 +35,7 @@ class PosterState : PersistentState() {
     }
   }
 
-  override fun writeNbt(nbt: NbtCompound) = nbt.apply {
+  override fun writeNbt(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup): NbtCompound = nbt.apply {
     putByteArray("colors", colors)
     putIntArray("palette", palette)
   }

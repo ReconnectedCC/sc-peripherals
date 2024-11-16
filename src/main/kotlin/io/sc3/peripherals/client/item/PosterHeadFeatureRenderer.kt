@@ -1,6 +1,7 @@
 package io.sc3.peripherals.client.item
 
 import io.sc3.library.ext.event
+import io.sc3.peripherals.Registration
 import io.sc3.peripherals.posters.PosterItem
 import io.sc3.peripherals.util.toFloatList
 import net.minecraft.client.render.VertexConsumerProvider
@@ -48,23 +49,20 @@ object PosterHeadFeatureRenderer {
       // apply injected matrix
       if (APPLY_TRANSFORMS_EVENT.invoker().invoke(matrices, entity, itemStack) != ActionResult.PASS) {
         // apply user-defined matrix
-        itemStack.nbt?.let {
-          if (it.contains("translate")) {
-            val list = it.getList("translate", NbtElement.FLOAT_TYPE.toInt()).toFloatList()
-            if (list.size == 3) matrices.translate(list[0], list[1], list[2])
-          }
+        var translate = itemStack.get(Registration.ModComponents.POSTER_HEAD_TRANSLATE);
+        var scale = itemStack.get(Registration.ModComponents.POSTER_HEAD_SCALE);
+        var rotate = itemStack.get(Registration.ModComponents.POSTER_HEAD_ROTATE);
 
-          if (it.contains("scale")) {
-            val list = it.getList("scale", NbtElement.FLOAT_TYPE.toInt()).toFloatList()
-            if (list.size == 3) matrices.scale(list[0], list[1], list[2])
-          }
-
-          if (it.contains("rotate")) {
-            val list = it.getList("rotate", NbtElement.FLOAT_TYPE.toInt()).toFloatList()
-            list.getOrNull(0)?.let { x -> matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(x)) }
-            list.getOrNull(1)?.let { y -> matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(y)) }
-            list.getOrNull(2)?.let { z -> matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(z)) }
-          }
+        if(translate != null) {
+          if (translate.size == 3) matrices.translate(translate[0], translate[1], translate[2])
+        }
+        if(scale != null) {
+          if (scale.size == 3) matrices.translate(scale[0], scale[1], scale[2])
+        }
+        if(rotate != null) {
+          rotate.getOrNull(0)?.let { x -> matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(x)) }
+          rotate.getOrNull(1)?.let { y -> matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(y)) }
+          rotate.getOrNull(2)?.let { z -> matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(z)) }
         }
       }
 

@@ -1,5 +1,6 @@
 package io.sc3.peripherals
 
+import com.mojang.serialization.Codec
 import dan200.computercraft.api.peripheral.PeripheralLookup
 import io.sc3.library.networking.registerServerReceiver
 import io.sc3.peripherals.ScPeripherals.ModId
@@ -30,6 +31,8 @@ import net.minecraft.block.BlockState
 import net.minecraft.block.MapColor
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.block.enums.NoteBlockInstrument
+import net.minecraft.component.ComponentType
 import net.minecraft.item.BlockItem
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -40,6 +43,7 @@ import net.minecraft.registry.RegistryKeys
 import net.minecraft.resource.featuretoggle.FeatureFlags
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.text.Text
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 
 object Registration {
@@ -63,7 +67,29 @@ object Registration {
     PeripheralLookup.get().registerForBlockEntity({ be, _ -> be.peripheral }, ModBlockEntities.printer)
     PeripheralLookup.get().registerForBlockEntity({ be, _ -> be.peripheral }, ModBlockEntities.posterPrinter)
 
-    registerServerReceiver(sPosterRequestC2SPacket.id, PosterRequestC2SPacket::fromBytes)
+    registerServerReceiver(PosterRequestC2SPacket.id, PosterRequestC2SPacket::fromBytes)
+  }
+  object ModComponents {
+    val POSTER_HEAD_TRANSLATE: ComponentType<List<Float>> = register(
+      DATA_COMPONENT_TYPE,
+      ModId("poster_head_translate"),
+      ComponentType.builder<List<Float>>().codec(Codec.FLOAT.listOf()).build()
+    );
+    val POSTER_HEAD_SCALE: ComponentType<List<Float>> = register(
+      DATA_COMPONENT_TYPE,
+      ModId("poster_head_scale"),
+      ComponentType.builder<List<Float>>().codec(Codec.FLOAT.listOf()).build()
+    );
+    val POSTER_HEAD_ROTATE: ComponentType<List<Float>> = register(
+      DATA_COMPONENT_TYPE,
+      ModId("poster_head_rotate"),
+      ComponentType.builder<List<Float>>().codec(Codec.FLOAT.listOf()).build()
+    );
+    val POSTER_KEY: ComponentType<String> = register(
+      DATA_COMPONENT_TYPE,
+      ModId("poster_key"),
+      ComponentType.builder<String>().codec(Codec.STRING).build()
+    );
   }
 
   object ModBlocks {
@@ -83,7 +109,7 @@ object Registration {
 
     private fun settings() = AbstractBlock.Settings.create()
       .mapColor(MapColor.STONE_GRAY)
-      .instrument(Instrument.BASEDRUM)
+      .instrument(NoteBlockInstrument.BASEDRUM)
       .strength(2.0f)
       .nonOpaque()
   }
