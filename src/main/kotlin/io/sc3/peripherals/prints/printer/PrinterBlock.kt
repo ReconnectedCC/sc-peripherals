@@ -31,8 +31,13 @@ class PrinterBlock(settings: Settings) : BaseBlockWithEntity(settings), Waterlog
       .with(waterlogged, false)
   }
 
-  override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand,
-                     hit: BlockHitResult): ActionResult {
+  override fun onUse(
+    state: BlockState,
+    world: World,
+    pos: BlockPos,
+    player: PlayerEntity,
+    hit: BlockHitResult
+  ): ActionResult {
     if (!world.isClient) {
       val factory = state.createScreenHandlerFactory(world, pos)
       factory?.let { player.openHandledScreen(it) }

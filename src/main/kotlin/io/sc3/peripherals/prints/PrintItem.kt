@@ -5,9 +5,9 @@ import io.sc3.peripherals.Registration.ModBlocks
 import io.sc3.peripherals.Registration.ModItems
 import io.sc3.peripherals.ScPeripherals.ModId
 import io.sc3.peripherals.ScPeripherals.modId
-import net.minecraft.client.item.TooltipContext
 import net.minecraft.item.BlockItem
 import net.minecraft.item.ItemStack
+import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.text.Text
 import net.minecraft.text.Text.literal
 import net.minecraft.text.Text.translatable
@@ -19,7 +19,12 @@ class PrintItem(settings: Settings) : BlockItem(ModBlocks.print, settings) {
     return printData(stack).labelText ?: return super.getName(stack)
   }
 
-  override fun appendTooltip(stack: ItemStack, world: World?, tooltip: MutableList<Text>, context: TooltipContext) {
+  override fun appendTooltip(
+    stack: ItemStack,
+    context: TooltipContext,
+    tooltip: MutableList<Text>,
+    type: TooltipType
+  ) {
     // Don't call super here
     val data = printData(stack)
     data.tooltip?.let { tooltip.add(literal(it)) }

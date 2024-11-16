@@ -52,7 +52,7 @@ data class Shape(
         nbt.byteToDouble("minX"), nbt.byteToDouble("minY"), nbt.byteToDouble("minZ"),
         nbt.byteToDouble("maxX"), nbt.byteToDouble("maxY"), nbt.byteToDouble("maxZ")
       ),
-      nbt.optString("tex")?.let { if (it.isNotEmpty()) Identifier(it) else null },
+      nbt.optString("tex")?.let { if (it.isNotEmpty()) Identifier.of(it) else null },
       nbt.optInt("tint")
     )
   }

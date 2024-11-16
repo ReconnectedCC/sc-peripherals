@@ -38,6 +38,7 @@ import net.minecraft.util.shape.VoxelShapes
 import net.minecraft.world.BlockView
 import net.minecraft.world.World
 import net.minecraft.world.WorldAccess
+import net.minecraft.world.WorldView
 
 class PrintBlock(settings: Settings) : BaseBlockWithEntity(settings), WaterloggableBlock, SeatBlock {
   init {
@@ -66,7 +67,7 @@ class PrintBlock(settings: Settings) : BaseBlockWithEntity(settings), Waterlogga
     .with(waterlogged, placementWaterlogged(ctx))
     .with(luminance, placementLuminance(ctx))
 
-  override fun getPickStack(world: BlockView, pos: BlockPos, state: BlockState): ItemStack {
+  override fun getPickStack(world: WorldView, pos: BlockPos, state: BlockState): ItemStack {
     val be = blockEntity(world, pos) ?: return ItemStack.EMPTY
     return PrintItem.fromBlockEntity(be)
   }
@@ -121,9 +122,9 @@ class PrintBlock(settings: Settings) : BaseBlockWithEntity(settings), Waterlogga
     if (state.get(on)) world.scheduleBlockTick(pos, this, toggleTicks)
   }
 
-  override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand,
+  override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity,
                      hit: BlockHitResult): ActionResult {
-    val be = blockEntity(world, pos) ?: return super.onUse(state, world, pos, player, hand, hit)
+    val be = blockEntity(world, pos) ?: return super.onUse(state, world, pos, player, hit)
     if (be.canTurnOn) be.toggle()
     return ActionResult.success(world.isClient)
   }

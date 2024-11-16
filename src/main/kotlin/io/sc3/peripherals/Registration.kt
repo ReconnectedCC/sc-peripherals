@@ -30,7 +30,6 @@ import net.minecraft.block.BlockState
 import net.minecraft.block.MapColor
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
-import net.minecraft.block.enums.Instrument
 import net.minecraft.item.BlockItem
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -64,7 +63,7 @@ object Registration {
     PeripheralLookup.get().registerForBlockEntity({ be, _ -> be.peripheral }, ModBlockEntities.printer)
     PeripheralLookup.get().registerForBlockEntity({ be, _ -> be.peripheral }, ModBlockEntities.posterPrinter)
 
-    registerServerReceiver(PosterRequestC2SPacket.id, PosterRequestC2SPacket::fromBytes)
+    registerServerReceiver(sPosterRequestC2SPacket.id, PosterRequestC2SPacket::fromBytes)
   }
 
   object ModBlocks {

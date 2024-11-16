@@ -36,7 +36,7 @@ class PosterPrinterScreen(
   }
 
   override fun render(ctx: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-    renderBackground(ctx)
+    renderBackground(ctx, mouseX, mouseY, delta)
 
     inkBar.progress = handler.be?.ink ?: 0
 
