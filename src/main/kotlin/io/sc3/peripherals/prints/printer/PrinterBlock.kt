@@ -1,11 +1,14 @@
 package io.sc3.peripherals.prints.printer
 
+import com.mojang.serialization.MapCodec
 import io.sc3.library.WaterloggableBlock
 import io.sc3.library.WaterloggableBlock.Companion.waterlogged
 import io.sc3.peripherals.Registration.ModBlockEntities.printer
+import io.sc3.peripherals.ScPeripherals
 import io.sc3.peripherals.util.BaseBlockWithEntity
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
+import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
@@ -29,6 +32,15 @@ class PrinterBlock(settings: Settings) : BaseBlockWithEntity(settings), Waterlog
     defaultState = defaultState
       .with(facing, Direction.NORTH)
       .with(waterlogged, false)
+  }
+  val CODEC: MapCodec<PrinterBlock> = createCodec { settings: Settings ->
+    PrinterBlock(
+      settings,
+    )
+  }
+
+  override fun getCodec(): MapCodec<out BlockWithEntity> {
+    return CODEC
   }
 
   override fun onUse(
@@ -55,7 +67,7 @@ class PrinterBlock(settings: Settings) : BaseBlockWithEntity(settings), Waterlog
     type: BlockEntityType<T>
   ): BlockEntityTicker<T>? {
     if (world.isClient) return null
-    return checkType(type, printer, PrinterBlockEntity.Companion::onTick)
+    return ScPeripherals.checkTypeForTicker(type, printer, PrinterBlockEntity.Companion::onTick)
   }
 
   override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {

@@ -90,7 +90,7 @@ class PrintRecipe(
     if (items.beaconBlock != null) data.isBeaconBlock = true
     if (items.honeyBlock != null) data.isQuiet = true
 
-    val nbt = result.nbt ?: return ItemStack.EMPTY
+    val nbt = result.orCreateNbt ?: return ItemStack.EMPTY
     nbt.put("data", data.toNbt())
 
     return result

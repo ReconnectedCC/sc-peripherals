@@ -145,7 +145,7 @@ class PrinterPeripheral(val be: PrinterBlockEntity) : InventoryPeripheral(be) {
     val fixedTint = tint.orElse(0xFFFFFF) and 0xFFFFFF // Discard alpha component
 
     val shapes = if (state.orElse(false)) be.data.shapesOn else be.data.shapesOff
-    shapes.add(Shape(box, textureId, fixedTint))
+    shapes.add(Shape(box, Optional.ofNullable(textureId), Optional.of(fixedTint)))
 
     be.dataUpdated()
   }
