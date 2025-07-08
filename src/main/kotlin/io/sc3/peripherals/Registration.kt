@@ -23,6 +23,7 @@ import io.sc3.peripherals.prints.printer.PrinterBlock
 import io.sc3.peripherals.prints.printer.PrinterBlockEntity
 import io.sc3.peripherals.prints.printer.PrinterScreenHandler
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType
 import net.minecraft.block.AbstractBlock
@@ -67,7 +68,9 @@ object Registration {
     PeripheralLookup.get().registerForBlockEntity({ be, _ -> be.peripheral }, ModBlockEntities.printer)
     PeripheralLookup.get().registerForBlockEntity({ be, _ -> be.peripheral }, ModBlockEntities.posterPrinter)
 
-    registerServerReceiver(PosterRequestC2SPacket.id, PosterRequestC2SPacket::fromBytes)
+    PayloadTypeRegistry.playC2S().register(PosterRequestC2SPacket.id, PosterRequestC2SPacket.CODEC);
+
+    registerServerReceiver(PosterRequestC2SPacket.id);
   }
   object ModComponents {
     val POSTER_HEAD_TRANSLATE: ComponentType<List<Float>> = register(
