@@ -17,10 +17,10 @@ data class PosterPrinterInkPacket(
   val pos: BlockPos,
   val ink: Int
 ) : ScLibraryPacket() {
-  override val id = PosterPrinterInkPacket.id
+  val id = PosterPrinterInkPacket.id
 
   companion object {
-    val id = CustomPayload.id("poster_printer_ink")
+    val id = CustomPayload.id<PosterPrinterInkPacket>("poster_printer_ink")
 
     val CODEC = PacketCodec.tuple(
       BlockPos.PACKET_CODEC, PosterPrinterInkPacket::pos,

@@ -17,10 +17,7 @@ import io.sc3.peripherals.posters.printer.*
 import io.sc3.peripherals.prints.PrintBlock
 import io.sc3.peripherals.prints.PrintBlockEntity
 import io.sc3.peripherals.prints.PrintItem
-import io.sc3.peripherals.prints.printer.PrinterBlock
-import io.sc3.peripherals.prints.printer.PrinterBlockEntity
-import io.sc3.peripherals.prints.printer.PrinterDataPacket
-import io.sc3.peripherals.prints.printer.PrinterScreenHandler
+import io.sc3.peripherals.prints.printer.*
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
@@ -72,6 +69,7 @@ object Registration {
     PayloadTypeRegistry.playS2C().register(PrinterDataPacket.id, PrinterDataPacket.CODEC)
     PayloadTypeRegistry.playS2C().register(PosterPrinterStartPrintPacket.id, PosterPrinterStartPrintPacket.CODEC)
     PayloadTypeRegistry.playS2C().register(PosterPrinterInkPacket.id, PosterPrinterInkPacket.CODEC)
+    PayloadTypeRegistry.playS2C().register(PrinterInkPacket.id, PrinterInkPacket.CODEC)
 
     registerServerReceiver(PosterRequestC2SPacket.id);
   }

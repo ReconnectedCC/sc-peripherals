@@ -3,6 +3,7 @@ package io.sc3.peripherals.client
 import io.sc3.library.ext.ItemFrameEvents
 import io.sc3.library.networking.registerClientReceiver
 import io.sc3.peripherals.Registration
+import io.sc3.peripherals.ScPeripherals
 import io.sc3.peripherals.client.block.PosterPrinterRenderer
 import io.sc3.peripherals.client.block.PrintBakedModel
 import io.sc3.peripherals.client.block.PrintUnbakedModel
@@ -30,6 +31,8 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry
 import net.minecraft.client.gui.screen.ingame.HandledScreens
 import net.minecraft.client.render.RenderLayer
+import net.minecraft.client.render.block.entity.BlockEntityRendererFactories
+import net.minecraft.util.Identifier
 import org.slf4j.LoggerFactory
 
 object ScPeripheralsClient : ClientModInitializer {
@@ -40,19 +43,20 @@ object ScPeripheralsClient : ClientModInitializer {
 
     // Initialize the default config file if it does not yet exist
     ScPeripheralsClientConfig.config.load()
+    BlockEntityRendererFactories.register(Registration.ModBlockEntities.printer)
+      { PrinterRenderer }
+    BlockEntityRendererFactories.register(Registration.ModBlockEntities.posterPrinter)
+      { PosterPrinterRenderer }
 
-    BlockEntityRendererRegistry.register(Registration.ModBlockEntities.printer) { PrinterRenderer }
-    BlockEntityRendererRegistry.register(Registration.ModBlockEntities.posterPrinter) { PosterPrinterRenderer }
     HandledScreens.register(Registration.ModScreens.printer, ::PrinterScreen)
     HandledScreens.register(Registration.ModScreens.posterPrinter, ::PosterPrinterScreen)
 
     // Allow transparent textures to work in 3D prints
     BlockRenderLayerMap.INSTANCE.putBlock(Registration.ModBlocks.print, RenderLayer.getTranslucent())
 
-    ModelLoadingRegistry.INSTANCE.registerResourceProvider { ModelResourceProvider { id, _ -> when(id) {
-      PrintBlock.id, PrintItem.id -> PrintUnbakedModel()
-      else -> null
-    }}}
+    ModelLoadingPlugin.register { ctx ->
+      ctx.addModels(Identifier.of(ScPeripherals.modId, PrintBlock.id))
+    }
 
     registerClientReceiver(PrinterInkPacket.id)
     registerClientReceiver(PrinterDataPacket.id)
