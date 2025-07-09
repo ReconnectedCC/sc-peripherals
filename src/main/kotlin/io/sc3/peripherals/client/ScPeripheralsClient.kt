@@ -25,6 +25,7 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry
 import net.minecraft.client.gui.screen.ingame.HandledScreens
@@ -53,12 +54,12 @@ object ScPeripheralsClient : ClientModInitializer {
       else -> null
     }}}
 
-    registerClientReceiver(PrinterInkPacket.id, PrinterInkPacket::fromBytes)
-    registerClientReceiver(PrinterDataPacket.id, PrinterDataPacket::fromBytes)
+    registerClientReceiver(PrinterInkPacket.id)
+    registerClientReceiver(PrinterDataPacket.id)
 
-    registerClientReceiver(PosterPrinterInkPacket.id, PosterPrinterInkPacket::fromBytes)
-    registerClientReceiver(PosterPrinterStartPrintPacket.id, PosterPrinterStartPrintPacket::fromBytes)
-    registerClientReceiver(PosterUpdateS2CPacket.id, PosterUpdateS2CPacket::fromBytes)
+    registerClientReceiver(PosterPrinterInkPacket.id)
+    registerClientReceiver(PosterPrinterStartPrintPacket.id)
+    registerClientReceiver(PosterUpdateS2CPacket.id)
 
     ItemFrameEvents.ITEM_RENDER.register(PosterRenderer::renderItemFrame)
 

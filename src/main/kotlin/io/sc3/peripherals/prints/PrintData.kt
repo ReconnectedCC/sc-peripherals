@@ -1,23 +1,28 @@
 package io.sc3.peripherals.prints
 
+import com.mojang.datafixers.util.Function6
 import com.mojang.serialization.Codec
-import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
+import io.netty.buffer.ByteBuf
 import io.sc3.library.ext.optBoolean
 import io.sc3.library.ext.optString
 import io.sc3.library.ext.putOptString
 import io.sc3.peripherals.config.ScPeripheralsConfig.config
-import io.sc3.peripherals.prints.PrintData.Companion.getSeatPos
-import io.sc3.peripherals.prints.PrintData.Companion.getShapeSet
-import jdk.jfr.Frequency
+import io.sc3.peripherals.util.PacketCodecBuilder
 import net.fabricmc.fabric.api.util.NbtType.COMPOUND
-import net.minecraft.SharedConstants
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.network.RegistryByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.codec.PacketCodecs
 import net.minecraft.text.Text
 import net.minecraft.util.StringHelper
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.shape.VoxelShape
+import java.util.*
+import java.util.function.Function
+import kotlin.jvm.optionals.getOrDefault
+import kotlin.jvm.optionals.getOrNull
 
 const val MAX_LABEL_LENGTH = 48
 const val MAX_TOOLTIP_LENGTH = 256
@@ -108,19 +113,95 @@ data class PrintData(
     val customRedstoneCost: Int = config.get("printer.custom_redstone_cost")
     val noclipCostMultiplier: Int = config.get("printer.noclip_cost_multiplier")
 
-    val CODEC: MapCodec<Frequency> = RecordCodecBuilder.mapCodec { i ->
+    val VEC3D_PACKET_CODED: PacketCodec<RegistryByteBuf, Vec3d> = PacketCodec.tuple(
+      PacketCodecs.DOUBLE, Vec3d::x,
+      PacketCodecs.DOUBLE, Vec3d::y,
+      PacketCodecs.DOUBLE, Vec3d::z,
+      ::Vec3d
+    )
+
+    fun optionalStringCodec(): PacketCodec<RegistryByteBuf, String?> =
+      PacketCodecs.optional(PacketCodecs.STRING).xmap(
+        { it.getOrNull() },
+        { Optional.ofNullable(it) }
+      ).cast()
+
+    fun optionalBool(default: Boolean): PacketCodec<RegistryByteBuf, Boolean> =
+      PacketCodecs.optional(PacketCodecs.BOOL).xmap(
+        { it.getOrDefault(default) },
+        { Optional.ofNullable(it) }
+      ).cast()
+
+    fun optionalInt(default: Int): PacketCodec<RegistryByteBuf, Int> =
+      PacketCodecs.optional(PacketCodecs.INTEGER).xmap(
+        { it.getOrDefault(default) },
+        { Optional.ofNullable(it) }
+      ).cast()
+
+    fun optionalShapes(): PacketCodec<RegistryByteBuf, Shapes> =
+      PacketCodecs.optional(Shapes.PACKET_CODEC).xmap(
+        { it.getOrDefault(Shapes()) },
+        { Optional.ofNullable(it) }
+      )
+
+    fun optionalVec3d(): PacketCodec<RegistryByteBuf, Vec3d?> =
+      PacketCodecs.optional(VEC3D_PACKET_CODED).xmap(
+        { it.getOrNull() },
+        { Optional.ofNullable(it) }
+      )
+
+
+    val PACKET_CODEC = PacketCodecBuilder<RegistryByteBuf, PrintData> { fields ->
+      PrintData(
+        initialLabel    = fields[0] as String?,
+        tooltip         = fields[1] as String?,
+        isButton        = fields[2] as Boolean,
+        collideWhenOn   = fields[3] as Boolean,
+        collideWhenOff  = fields[4] as Boolean,
+        lightWhenOn     = fields[5] as Boolean,
+        lightWhenOff    = fields[6] as Boolean,
+        lightLevel      = fields[7] as Int,
+        redstoneLevel   = fields[8] as Int,
+        isBeaconBlock   = fields[9] as Boolean,
+        isQuiet         = fields[10] as Boolean,
+        shapesOff       = fields[11] as Shapes,
+        shapesOn        = fields[12] as Shapes,
+        seatPos         = fields[13] as Vec3d?
+      )
+    }.apply {
+      field(optionalStringCodec(), PrintData::initialLabel)
+      field(optionalStringCodec(), PrintData::tooltip)
+      field(optionalBool(false), PrintData::isButton)
+      field(optionalBool(true), PrintData::collideWhenOn)
+      field(optionalBool(true), PrintData::collideWhenOff)
+      field(optionalBool(true), PrintData::lightWhenOn)
+      field(optionalBool(true), PrintData::lightWhenOff)
+      field(optionalInt(0), PrintData::lightLevel)
+      field(optionalInt(0), PrintData::redstoneLevel)
+      field(optionalBool(false), PrintData::isBeaconBlock)
+      field(optionalBool(false), PrintData::isQuiet)
+      field(optionalShapes(), PrintData::shapesOff)
+      field(optionalShapes(), PrintData::shapesOn)
+      field(optionalVec3d(), PrintData::seatPos)
+    }.build()
+
+
+    val CODEC: Codec<PrintData> = RecordCodecBuilder.create { i ->
       i.group(
-        Codec.STRING.optionalFieldOf("label"), // Cheaper than sanitiseLabel
-        Codec.STRING.optionalFieldOf("tooltip"),
-        Codec.BOOL.fieldOf("isButton"),
-        Codec.BOOL.fieldOf("collideWhenOn"),
-        Codec.BOOL.fieldOf("collideWhenOff"),
-        Codec.BOOL.optionalFieldOf("lightWhenOn2"),
-        Codec.BOOL.optionalFieldOf("lightWhenOff2"),
-        Codec.INT.fieldOf("lightLevel"),
-        Codec.INT.fieldOf("redstoneLevel"),
-        Codec.BOOL.fieldOf("isBeaconBlock"),
-        Codec.BOOL.fieldOf("isQuiet")
+        Codec.STRING.optionalFieldOf("initialLabel", null).forGetter { it.initialLabel },
+        Codec.STRING.optionalFieldOf("tooltip", null).forGetter { it.tooltip },
+        Codec.BOOL.optionalFieldOf("isButton", false).forGetter { it.isButton },
+        Codec.BOOL.optionalFieldOf("collideWhenOn", true).forGetter { it.collideWhenOn },
+        Codec.BOOL.optionalFieldOf("collideWhenOff", true).forGetter { it.collideWhenOff },
+        Codec.BOOL.optionalFieldOf("lightWhenOn", true).forGetter { it.lightWhenOn },
+        Codec.BOOL.optionalFieldOf("lightWhenOff", true).forGetter { it.lightWhenOff },
+        Codec.INT.optionalFieldOf("lightLevel", 0).forGetter { it.lightLevel },
+        Codec.INT.optionalFieldOf("redstoneLevel", 0).forGetter { it.redstoneLevel },
+        Codec.BOOL.optionalFieldOf("isBeaconBlock", false).forGetter { it.isBeaconBlock },
+        Codec.BOOL.optionalFieldOf("isQuiet", false).forGetter { it.isQuiet },
+        Shapes.CODEC.optionalFieldOf("shapesOff", Shapes()).forGetter { it.shapesOff },
+        Shapes.CODEC.optionalFieldOf("shapesOn", Shapes()).forGetter { it.shapesOn },
+        Vec3d.CODEC.optionalFieldOf("seatPos", null).forGetter { it.seatPos }
       ).apply(i, ::PrintData)
     }
 

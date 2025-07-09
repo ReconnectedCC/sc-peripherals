@@ -1,5 +1,6 @@
 package io.sc3.peripherals.prints
 
+import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
@@ -8,6 +9,9 @@ import io.sc3.library.ext.surfaceArea
 import io.sc3.library.ext.toDiv16VoxelShape
 import io.sc3.library.ext.volume
 import net.minecraft.nbt.NbtList
+import net.minecraft.network.RegistryByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.codec.PacketCodecs
 import net.minecraft.util.math.Direction
 import net.minecraft.util.shape.VoxelShape
 import net.minecraft.util.shape.VoxelShapes
@@ -18,6 +22,18 @@ class Shapes : HashSet<Shape>() {
   private val hashCode by lazy { super.hashCode() }
   override fun hashCode() = hashCode
   override fun equals(other: Any?) = other is Shapes && other.hashCode == hashCode && super.equals(other)
+
+  companion object {
+    val CODEC: Codec<Shapes> = Codec.list(Shape.CODEC).xmap(
+      { list -> Shapes().apply { addAll(list) } },
+      { it.sortedBy { shape -> shape.hashCode() } } // Stable order for comparison
+    )
+
+    val PACKET_CODEC: PacketCodec<RegistryByteBuf, Shapes> = Shape.PACKET_CODEC.collect(PacketCodecs.toList()).xmap(
+      { list -> Shapes().apply { addAll(list) } },
+      { it.sortedBy { shape -> shape.hashCode() } } // Stable order for comparison
+    );
+  }
 
   val totalVolume
     get() = sumOf { it.bounds.volume }

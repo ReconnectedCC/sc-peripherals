@@ -8,9 +8,13 @@ import io.sc3.library.ext.optInt
 import io.sc3.library.ext.optString
 import io.sc3.library.ext.putOptInt
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.network.RegistryByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.codec.PacketCodecs
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Box
 import java.util.*
+import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 
 data class Shape(
@@ -60,13 +64,35 @@ data class Shape(
       nbt.optString("tex").let { if(it == null) Optional.empty() else Optional.of(Identifier.of(it)) },
       nbt.optInt("tint").let { if(it == null) Optional.empty() else Optional.of(it) }
     )
-    val CODEC: MapCodec<Shape> = RecordCodecBuilder.mapCodec { i ->
+
+    val BOX_PACKET_CODEC: PacketCodec<RegistryByteBuf, Box> = PacketCodec.tuple(
+      PacketCodecs.DOUBLE, Box::minX,
+      PacketCodecs.DOUBLE, Box::minY,
+      PacketCodecs.DOUBLE, Box::minZ,
+
+      PacketCodecs.DOUBLE, Box::maxX,
+      PacketCodecs.DOUBLE, Box::maxY,
+      PacketCodecs.DOUBLE, Box::maxZ,
+      ::Box
+    )
+
+    val PACKET_CODEC: PacketCodec<RegistryByteBuf, Shape> = PacketCodec.tuple(
+      BOX_PACKET_CODEC, Shape::bounds,
+      PacketCodecs.optional(Identifier.PACKET_CODEC), Shape::texture,
+      PacketCodecs.optional(PacketCodecs.INTEGER), Shape::tint,
+      ::Shape
+    )
+
+    val MAP_CODEC: MapCodec<Shape> = RecordCodecBuilder.mapCodec { i ->
       i.group(
         BOX_CODEC.fieldOf("box").forGetter{ b -> b.bounds },
         Identifier.CODEC.optionalFieldOf("texture").forGetter { b -> b.texture },
-        Codec.INT.optionalFieldOf("texture").forGetter { b -> b.tint }
+        Codec.INT.optionalFieldOf("tint").forGetter { b -> b.tint }
       ).apply(i, ::Shape)
     }
+
+    val CODEC = MAP_CODEC.codec();
+
 
     val BOX_CODEC: MapCodec<Box> =RecordCodecBuilder.mapCodec { i ->
         i.group(

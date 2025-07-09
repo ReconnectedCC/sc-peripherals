@@ -21,6 +21,7 @@ import io.sc3.peripherals.prints.PrintBlockEntity
 import io.sc3.peripherals.prints.PrintItem
 import io.sc3.peripherals.prints.printer.PrinterBlock
 import io.sc3.peripherals.prints.printer.PrinterBlockEntity
+import io.sc3.peripherals.prints.printer.PrinterDataPacket
 import io.sc3.peripherals.prints.printer.PrinterScreenHandler
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
@@ -69,6 +70,7 @@ object Registration {
     PeripheralLookup.get().registerForBlockEntity({ be, _ -> be.peripheral }, ModBlockEntities.posterPrinter)
 
     PayloadTypeRegistry.playC2S().register(PosterRequestC2SPacket.id, PosterRequestC2SPacket.CODEC);
+    PayloadTypeRegistry.playC2S().register(PrinterDataPacket.id, PrinterDataPacket.CODEC)
 
     registerServerReceiver(PosterRequestC2SPacket.id);
   }
