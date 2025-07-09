@@ -2,38 +2,42 @@ package io.sc3.peripherals.posters.printer
 
 import io.sc3.library.networking.ScLibraryPacket
 import io.sc3.peripherals.ScPeripherals.ModId
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PacketSender
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayNetworkHandler
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.codec.PacketCodecs
+import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.math.BlockPos
 
 data class PosterPrinterStartPrintPacket(
   val pos: BlockPos,
   val posterId: String,
 ) : ScLibraryPacket() {
-  override val id = PosterPrinterStartPrintPacket.id
+  val id = PosterPrinterStartPrintPacket.id
 
   companion object {
-    val id = ModId("poster_printer_start_print")
+    val id = CustomPayload.id<PosterPrinterStartPrintPacket>("poster_printer_start_print")
 
-    fun fromBytes(buf: PacketByteBuf) = PosterPrinterStartPrintPacket(
-      pos = buf.readBlockPos(),
-      posterId = buf.readString(),
+    val CODEC = PacketCodec.tuple(
+      BlockPos.PACKET_CODEC, PosterPrinterStartPrintPacket::pos,
+      PacketCodecs.STRING, PosterPrinterStartPrintPacket::posterId,
+      ::PosterPrinterStartPrintPacket
     )
   }
 
-  override fun toBytes(buf: PacketByteBuf) {
-    buf.writeBlockPos(pos)
-    buf.writeString(posterId)
+  override fun getId(): CustomPayload.Id<out CustomPayload> {
+    return id;
   }
 
-  override fun onClientReceive(client: MinecraftClient, handler: ClientPlayNetworkHandler,
-                               responseSender: PacketSender) {
-    super.onClientReceive(client, handler, responseSender)
-
-    val printer = client.world?.getBlockEntity(pos) as? PosterPrinterBlockEntity ?: return
+  override fun onClientReceive(ctx: ClientPlayNetworking.Context) {
+    val printer = ctx.client().world?.getBlockEntity(pos) as? PosterPrinterBlockEntity ?: return
     printer.animatingPosterId = posterId
-    printer.animationStartTime = client.world?.time ?: 0
+    printer.animationStartTime = ctx.client().world?.time ?: 0
   }
+
+  override fun onServerReceive(ctx: ServerPlayNetworking.Context) {}
 }

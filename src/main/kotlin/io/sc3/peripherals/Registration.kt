@@ -13,9 +13,7 @@ import io.sc3.peripherals.item.InkCartridgeItem
 import io.sc3.peripherals.item.TextureAnalyzerItem
 import io.sc3.peripherals.posters.PosterItem
 import io.sc3.peripherals.posters.PosterRequestC2SPacket
-import io.sc3.peripherals.posters.printer.PosterPrinterBlock
-import io.sc3.peripherals.posters.printer.PosterPrinterBlockEntity
-import io.sc3.peripherals.posters.printer.PosterPrinterScreenHandler
+import io.sc3.peripherals.posters.printer.*
 import io.sc3.peripherals.prints.PrintBlock
 import io.sc3.peripherals.prints.PrintBlockEntity
 import io.sc3.peripherals.prints.PrintItem
@@ -69,8 +67,11 @@ object Registration {
     PeripheralLookup.get().registerForBlockEntity({ be, _ -> be.peripheral }, ModBlockEntities.printer)
     PeripheralLookup.get().registerForBlockEntity({ be, _ -> be.peripheral }, ModBlockEntities.posterPrinter)
 
+    // These PayloadTypeRegistry registers should be registered on both sides. No matter if it's playS2C or playC2S.
     PayloadTypeRegistry.playC2S().register(PosterRequestC2SPacket.id, PosterRequestC2SPacket.CODEC);
-    PayloadTypeRegistry.playC2S().register(PrinterDataPacket.id, PrinterDataPacket.CODEC)
+    PayloadTypeRegistry.playS2C().register(PrinterDataPacket.id, PrinterDataPacket.CODEC)
+    PayloadTypeRegistry.playS2C().register(PosterPrinterStartPrintPacket.id, PosterPrinterStartPrintPacket.CODEC)
+    PayloadTypeRegistry.playS2C().register(PosterPrinterInkPacket.id, PosterPrinterInkPacket.CODEC)
 
     registerServerReceiver(PosterRequestC2SPacket.id);
   }
