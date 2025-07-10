@@ -6,6 +6,7 @@ import net.minecraft.client.network.ClientPlayNetworkHandler
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.math.BlockPos
 import io.sc3.library.networking.ScLibraryPacket
+import io.sc3.peripherals.ScPeripherals
 import io.sc3.peripherals.ScPeripherals.ModId
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
@@ -21,7 +22,7 @@ data class PrinterInkPacket(
   val id = PrinterInkPacket.id
 
   companion object {
-    val id = CustomPayload.id<PrinterInkPacket>("printer_ink")
+    val id = CustomPayload.Id<PrinterInkPacket>(ModId("printer_ink"))
     val CODEC = PacketCodec.tuple(
       BlockPos.PACKET_CODEC, PrinterInkPacket::pos,
       PacketCodecs.INTEGER, PrinterInkPacket::chamelium,

@@ -33,7 +33,7 @@ data class PrinterDataPacket(
       ::PrinterDataPacket
     )
 
-    val id = CustomPayload.id<PrinterDataPacket>("printer_data")
+    val id = CustomPayload.Id<PrinterDataPacket>(ModId("printer_data"))
   }
 
   override fun getId(): CustomPayload.Id<out CustomPayload> {

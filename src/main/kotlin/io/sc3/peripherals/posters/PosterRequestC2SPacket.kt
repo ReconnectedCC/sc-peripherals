@@ -47,7 +47,7 @@ data class PosterRequestC2SPacket(
         if (idx >= MAX_POSTER_REQUESTS_PER_PACKET) break
 
         PosterItem.getPosterState(posterId, ctx.server().overworld)?.let { state ->
-          ctx.responseSender().sendPacket(state.toPacket(posterId))
+          ctx.responseSender().sendPacket(state.toPacket(posterId));
           responseCounter.inc()
         }
       }

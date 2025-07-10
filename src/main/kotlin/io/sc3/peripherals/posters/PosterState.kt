@@ -1,6 +1,10 @@
 package io.sc3.peripherals.posters
 
+import io.netty.buffer.ByteBuf
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.codec.PacketCodecs
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.world.PersistentState
 import java.io.File
@@ -61,7 +65,7 @@ class PosterState : PersistentState() {
   fun toPacket(id: String) = PosterUpdateS2CPacket(
     id,
     UpdateData(0, 0, 128, 128, colors, palette)
-  ).toS2CPacket()
+  )
 
   class UpdateData(
     val startX: Int,
@@ -71,6 +75,20 @@ class PosterState : PersistentState() {
     val colors: ByteArray,
     val palette: IntArray
   ) {
+    companion object {
+      val PACKET_CODEC = PacketCodec.tuple(
+        PacketCodecs.INTEGER, UpdateData::startX,
+        PacketCodecs.INTEGER, UpdateData::startZ,
+        PacketCodecs.INTEGER, UpdateData::width,
+        PacketCodecs.INTEGER, UpdateData::height,
+        PacketCodecs.BYTE_ARRAY, UpdateData::colors,
+        PacketCodecs.INTEGER.collect(PacketCodecs.toList()).xmap(
+          { x -> x.toIntArray()},
+          { x -> x.toList() }
+        ), UpdateData::palette,
+        ::UpdateData
+      )
+    }
     fun setColorsTo(posterState: PosterState) {
       for (i in 0 until width) {
         for (j in 0 until height) {

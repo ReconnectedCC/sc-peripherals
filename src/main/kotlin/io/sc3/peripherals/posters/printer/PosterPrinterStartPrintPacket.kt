@@ -20,7 +20,7 @@ data class PosterPrinterStartPrintPacket(
   val id = PosterPrinterStartPrintPacket.id
 
   companion object {
-    val id = CustomPayload.id<PosterPrinterStartPrintPacket>("poster_printer_start_print")
+    val id = CustomPayload.Id<PosterPrinterStartPrintPacket>(ModId("poster_printer_start_print"))
 
     val CODEC = PacketCodec.tuple(
       BlockPos.PACKET_CODEC, PosterPrinterStartPrintPacket::pos,
