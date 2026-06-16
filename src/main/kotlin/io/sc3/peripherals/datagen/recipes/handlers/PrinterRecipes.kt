@@ -8,27 +8,26 @@ import io.sc3.peripherals.Registration.ModItems
 import io.sc3.peripherals.ScPeripherals.ModId
 import io.sc3.peripherals.datagen.recipes.inventoryChange
 import io.sc3.peripherals.prints.PrintRecipe
-import net.fabricmc.fabric.api.recipe.v1.ingredient.DefaultCustomIngredients
 import net.fabricmc.fabric.api.tag.convention.v1.ConventionalItemTags
 import net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder
-import net.minecraft.data.server.recipe.RecipeJsonProvider
+import net.minecraft.data.server.recipe.RecipeExporter
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
 import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder
-import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.recipe.Ingredient
 import net.minecraft.recipe.book.RecipeCategory
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registries.RECIPE_SERIALIZER
 import net.minecraft.registry.Registry.register
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.util.Identifier
-import java.util.function.Consumer
 
 object PrinterRecipes : RecipeHandler {
   override fun registerSerializers() {
     register(RECIPE_SERIALIZER, ModId("print"), PrintRecipe.recipeSerializer)
   }
 
-  override fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+  override fun generateRecipes(exporter: RecipeExporter, registries: RegistryWrapper.WrapperLookup) {
     // Printers
     ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, ModItems.printer)
       .pattern("IHI")
@@ -38,12 +37,7 @@ object PrinterRecipes : RecipeHandler {
       .input('H', Items.HOPPER)
       .input('P', Items.STICKY_PISTON)
       .input('D', Items.DIAMOND_BLOCK)
-      .input(
-        'C', DefaultCustomIngredients.nbt(
-          ItemStack(Registries.ITEM.get(Identifier(ComputerCraftAPI.MOD_ID, "computer_advanced"))),
-          true
-        )
-      )
+      .input('C', Ingredient.ofItems(Registries.ITEM.get(Identifier.of(ComputerCraftAPI.MOD_ID, "computer_advanced"))))
       .hasComputer()
       .offerTo(exporter)
 
@@ -56,17 +50,12 @@ object PrinterRecipes : RecipeHandler {
       .input('N', Items.NETHER_STAR)
       .input('S', Items.STICK)
       .input('D', Items.DIAMOND_BLOCK)
-      .input(
-        'C', DefaultCustomIngredients.nbt(
-          ItemStack(Registries.ITEM.get(Identifier(ComputerCraftAPI.MOD_ID, "computer_advanced"))),
-          true
-        )
-      )
+      .input('C', Ingredient.ofItems(Registries.ITEM.get(Identifier.of(ComputerCraftAPI.MOD_ID, "computer_advanced"))))
       .hasComputer()
       .offerTo(exporter)
 
     // 3D prints (glowstone, beacon blocks)
-    BetterComplexRecipeJsonBuilder(ModItems.print, PrintRecipe.recipeSerializer)
+    BetterComplexRecipeJsonBuilder<PrintRecipe>(ModItems.print, PrintRecipe())
       .criterion("has_printer", inventoryChange(ModItems.printer))
       .criterion("has_print", inventoryChange(ModItems.print))
       .offerTo(exporter)

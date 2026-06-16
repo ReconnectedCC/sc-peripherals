@@ -130,13 +130,13 @@ class PrinterPeripheral(val be: PrinterBlockEntity) : InventoryPeripheral(be) {
       minX.coerceIn(0, 16), minY.coerceIn(0, 16), minZ.coerceIn(0, 16),
       maxX.coerceIn(0, 16), maxY.coerceIn(0, 16), maxZ.coerceIn(0, 16)
     )
-    if (box.xLength <= 0 || box.yLength <= 0 || box.zLength <= 0) {
+    if (box.getLengthX() <= 0 || box.getLengthY() <= 0 || box.getLengthZ() <= 0) {
       throw LuaException("Empty block")
     }
 
     val textureId = texture.orElse(null)?.let {
       if (it.isNotEmpty()) {
-        Identifier(it.take(64))
+        Identifier.tryParse(it.take(64))
       } else {
         null
       }

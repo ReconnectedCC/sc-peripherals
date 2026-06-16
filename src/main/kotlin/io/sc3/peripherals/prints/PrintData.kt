@@ -5,7 +5,7 @@ import io.sc3.library.ext.optString
 import io.sc3.library.ext.putOptString
 import io.sc3.peripherals.config.ScPeripheralsConfig.config
 import net.fabricmc.fabric.api.util.NbtType.COMPOUND
-import net.minecraft.SharedConstants
+import net.minecraft.util.StringHelper
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
 import net.minecraft.util.math.Direction
@@ -142,7 +142,7 @@ data class PrintData(
     /** Strip invalid characters, but allow the section sign. If sc-networking is installed, this will also strip
      * private-use font characters, but let's allow the Krist symbol (U+E000) */
     private fun stripInvalidChars(s: String, allowNewlines: Boolean = false) =
-      s.filter { SharedConstants.isValidChar(it) || it == '§' || it == '\uE000' || (allowNewlines && it == '\n') }
+      s.filter { StringHelper.isValidChar(it) || it == '§' || it == '\uE000' || (allowNewlines && it == '\n') }
 
     fun isValidSeatPos(pos: Vec3d) =
       pos.x in 0.1..0.9 && pos.y in 0.1..0.9 && pos.z in 0.1..0.9

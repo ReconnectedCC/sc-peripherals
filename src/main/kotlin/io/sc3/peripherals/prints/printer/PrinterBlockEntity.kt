@@ -18,6 +18,7 @@ import net.minecraft.inventory.SidedInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.listener.ClientPlayPacketListener
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.network.packet.Packet
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket
 import net.minecraft.screen.NamedScreenHandlerFactory
@@ -142,7 +143,7 @@ class PrinterBlockEntity(
   private fun canMergeOutput(): Boolean {
     val current = getStack(OUTPUT_SLOT)
     val output = PrintItem.create(data)
-    return current.isEmpty || ItemStack.canCombine(current, output)
+    return current.isEmpty || ItemStack.areItemsAndComponentsEqual(current, output)
   }
 
   fun onTick(world: World) {
@@ -248,15 +249,15 @@ class PrinterBlockEntity(
 
   override fun getDisplayName(): Text = Text.translatable(cachedState.block.translationKey)
 
-  override fun readNbt(nbt: NbtCompound) {
-    super.readNbt(nbt)
+  override fun readNbt(nbt: NbtCompound, registries: RegistryWrapper.WrapperLookup) {
+    super.readNbt(nbt, registries)
 
-    Inventories.readNbt(nbt, inventory)
+    Inventories.readNbt(nbt, inventory, registries)
 
     data = PrintData.fromNbt(nbt.getCompound("data"))
     printing = nbt.getBoolean("printing")
     printCount = nbt.getInt("printCount")
-    outputStack = nbt.optCompound("outputStack")?.let { ItemStack.fromNbt(it) } ?: ItemStack.EMPTY
+    outputStack = nbt.optCompound("outputStack")?.let { ItemStack.fromNbtOrEmpty(registries, it) } ?: ItemStack.EMPTY
 
     chamelium = nbt.getInt("chamelium")
     ink = nbt.getInt("ink")
@@ -265,15 +266,15 @@ class PrinterBlockEntity(
     if (world?.isClient == true) previewData = data
   }
 
-  override fun writeNbt(nbt: NbtCompound) {
-    super.writeNbt(nbt)
+  override fun writeNbt(nbt: NbtCompound, registries: RegistryWrapper.WrapperLookup) {
+    super.writeNbt(nbt, registries)
 
-    Inventories.writeNbt(nbt, inventory)
+    Inventories.writeNbt(nbt, inventory, registries)
 
     nbt.put("data", data.toNbt())
     nbt.putBoolean("printing", printing)
     nbt.putInt("printCount", printCount)
-    nbt.put("outputStack", outputStack.writeNbt(NbtCompound()))
+    if (!outputStack.isEmpty) nbt.put("outputStack", outputStack.encode(registries))
 
     nbt.putInt("chamelium", chamelium)
     nbt.putInt("ink", ink)
@@ -283,9 +284,9 @@ class PrinterBlockEntity(
   override fun toUpdatePacket(): Packet<ClientPlayPacketListener> =
     BlockEntityUpdateS2CPacket.create(this)
 
-  override fun toInitialChunkDataNbt(): NbtCompound {
-    val nbt = super.toInitialChunkDataNbt()
-    writeNbt(nbt)
+  override fun toInitialChunkDataNbt(registries: RegistryWrapper.WrapperLookup): NbtCompound {
+    val nbt = super.toInitialChunkDataNbt(registries)
+    writeNbt(nbt, registries)
     return nbt
   }
 

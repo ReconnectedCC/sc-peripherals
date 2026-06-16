@@ -1,48 +1,52 @@
 package io.sc3.peripherals.util
 
+import io.sc3.peripherals.ScPeripherals.modId
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.createS2CPacket
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.network.PacketByteBuf
-import net.minecraft.network.listener.ClientPlayPacketListener
-import net.minecraft.network.packet.s2c.play.ScreenHandlerPropertyUpdateS2CPacket
+import net.minecraft.network.RegistryByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.network.ServerPlayNetworkHandler
-import io.sc3.peripherals.ScPeripherals.ModId
+import net.minecraft.util.Identifier
 
 class ScreenHandlerPropertyUpdateIntS2CPacket(
-  syncId: Int,
-  propertyId: Int,
-  value: Int
-) : ScreenHandlerPropertyUpdateS2CPacket(syncId, propertyId, value) {
-  constructor (buf: PacketByteBuf) : this(
-    buf.readUnsignedByte().toInt(),
-    buf.readInt(),
-    buf.readInt()
-  )
-
-  override fun write(buf: PacketByteBuf) {
-    buf.writeByte(syncId)
-    buf.writeInt(propertyId)
-    buf.writeInt(value)
-  }
-
-  override fun apply(listener: ClientPlayPacketListener) {
-    listener.onScreenHandlerPropertyUpdate(this)
-  }
+  val syncId: Int,
+  val propertyId: Int,
+  val value: Int
+) : CustomPayload {
+  override fun getId() = ID
 
   fun send(handler: ServerPlayNetworkHandler) {
-    val buf = PacketByteBufs.create()
-    write(buf)
-    handler.sendPacket(createS2CPacket(id, buf))
+    ServerPlayNetworking.send(handler.player, this)
   }
 
   companion object {
-    val id = ModId("screen-handler-property-update-int")
+    val ID = CustomPayload.Id<ScreenHandlerPropertyUpdateIntS2CPacket>(
+      Identifier.of(modId, "screen-handler-property-update-int"))
+
+    val CODEC: PacketCodec<RegistryByteBuf, ScreenHandlerPropertyUpdateIntS2CPacket> = PacketCodec.of(
+      { pkt, buf ->
+        buf.writeByte(pkt.syncId)
+        buf.writeInt(pkt.propertyId)
+        buf.writeInt(pkt.value)
+      },
+      { buf -> ScreenHandlerPropertyUpdateIntS2CPacket(
+        buf.readUnsignedByte().toInt(),
+        buf.readInt(),
+        buf.readInt()
+      )}
+    )
 
     fun registerReceiver() {
-      ClientPlayNetworking.registerGlobalReceiver(id) { client, handler, buf, _ ->
-        val packet = ScreenHandlerPropertyUpdateIntS2CPacket(buf)
-        client.submit { packet.apply(handler) }
+      ClientPlayNetworking.registerGlobalReceiver(ID) { payload, context ->
+        context.client().execute {
+          val player = context.client().player ?: return@execute
+          val handler = player.currentScreenHandler
+          if (handler.syncId == payload.syncId) {
+            handler.setProperty(payload.propertyId, payload.value)
+          }
+        }
       }
     }
   }

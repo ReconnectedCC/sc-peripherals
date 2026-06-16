@@ -1,5 +1,6 @@
 package io.sc3.peripherals.posters.printer
 
+import com.mojang.serialization.MapCodec
 import io.sc3.library.WaterloggableBlock
 import io.sc3.library.WaterloggableBlock.Companion.waterlogged
 import io.sc3.library.ext.rotateTowards
@@ -10,6 +11,7 @@ import io.sc3.peripherals.util.BaseBlockWithEntity
 import net.minecraft.block.Block
 import net.minecraft.block.BlockRenderType
 import net.minecraft.block.BlockState
+import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.ShapeContext
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
@@ -23,7 +25,6 @@ import net.minecraft.state.property.Properties
 import net.minecraft.util.ActionResult
 import net.minecraft.util.BlockMirror
 import net.minecraft.util.BlockRotation
-import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
@@ -34,6 +35,8 @@ import net.minecraft.world.World
 import net.minecraft.world.WorldAccess
 
 class PosterPrinterBlock(settings: Settings) : BaseBlockWithEntity(settings), WaterloggableBlock {
+  override fun getCodec(): MapCodec<out BlockWithEntity> = throw UnsupportedOperationException()
+
   init {
     defaultState = defaultState
       .with(facing, Direction.NORTH)
@@ -51,7 +54,7 @@ class PosterPrinterBlock(settings: Settings) : BaseBlockWithEntity(settings), Wa
 
   override fun getRenderType(state: BlockState?) = BlockRenderType.ENTITYBLOCK_ANIMATED
 
-  override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand,
+  override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity,
                      hit: BlockHitResult): ActionResult {
     if (!world.isClient) {
       val factory = state.createScreenHandlerFactory(world, pos)
@@ -70,9 +73,9 @@ class PosterPrinterBlock(settings: Settings) : BaseBlockWithEntity(settings), Wa
     type: BlockEntityType<T>
   ): BlockEntityTicker<T>? {
     return if (world.isClient) {
-      checkType(type, posterPrinter, PosterPrinterBlockEntity.Companion::onClientTick)
+      validateTicker(type, posterPrinter, PosterPrinterBlockEntity.Companion::onClientTick)
     } else {
-      checkType(type, posterPrinter, PosterPrinterBlockEntity.Companion::onTick)
+      validateTicker(type, posterPrinter, PosterPrinterBlockEntity.Companion::onTick)
     }
   }
 

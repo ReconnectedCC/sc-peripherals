@@ -3,9 +3,9 @@ package io.sc3.peripherals.posters
 import io.sc3.peripherals.config.ScPeripheralsClientConfig
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.world.ClientWorld
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.world.World
 import kotlin.time.Duration.Companion.seconds
 
@@ -14,9 +14,9 @@ private val requestedPosters: MutableMap<String, Instant> = mutableMapOf()
 private val requestTimeout = 10.seconds
 
 fun tickPosterRequests(world: ClientWorld) {
-  val batch = posterRequestQueue.take(ScPeripheralsClientConfig.config["maxPosterRequestsPerTick"])
+  val batch = posterRequestQueue.take(ScPeripheralsClientConfig.config.getOrElse("maxPosterRequestsPerTick", 20))
   if (batch.isNotEmpty()) {
-    MinecraftClient.getInstance().player?.networkHandler?.sendPacket(PosterRequestC2SPacket(batch).toC2SPacket())
+    ClientPlayNetworking.send(PosterRequestC2SPacket(batch))
 
     // Remove the posters we just requested from the queue
     posterRequestQueue.removeAll(batch)
@@ -38,9 +38,7 @@ fun World.getPosterState(name: String): PosterState? {
     }
   } else {
     server!!.overworld
-      .persistentStateManager.get({ nbt: NbtCompound? ->
-        nbt?.let { PosterState.fromNbt(it) }
-      }, name)
+      .persistentStateManager.get(PosterState.TYPE, name)
   }
 }
 

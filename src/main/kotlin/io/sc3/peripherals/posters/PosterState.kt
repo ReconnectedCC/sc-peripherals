@@ -1,17 +1,13 @@
 package io.sc3.peripherals.posters
 
+import net.minecraft.datafixer.DataFixTypes
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.world.PersistentState
-import java.io.File
 
 class PosterState : PersistentState() {
   var colors = ByteArray(16384)
   var palette = getDefaultPalette() // Default to map colors
-
-  override fun save(file: File) {
-    file.parentFile.mkdirs()
-    super.save(file)
-  }
 
   fun setColor(x: Int, z: Int, color: Byte) {
     colors[x + z * 128] = color
@@ -19,6 +15,12 @@ class PosterState : PersistentState() {
   }
 
   companion object {
+    val TYPE = PersistentState.Type(
+      { PosterState() },
+      { nbt, _ -> fromNbt(nbt) },
+      DataFixTypes.LEVEL
+    )
+
     fun fromNbt(nbt: NbtCompound): PosterState {
       val posterState = PosterState()
       val colorArray = nbt.getByteArray("colors")
@@ -34,7 +36,7 @@ class PosterState : PersistentState() {
     }
   }
 
-  override fun writeNbt(nbt: NbtCompound) = nbt.apply {
+  override fun writeNbt(nbt: NbtCompound, registries: RegistryWrapper.WrapperLookup) = nbt.apply {
     putByteArray("colors", colors)
     putIntArray("palette", palette)
   }
@@ -60,7 +62,7 @@ class PosterState : PersistentState() {
   fun toPacket(id: String) = PosterUpdateS2CPacket(
     id,
     UpdateData(0, 0, 128, 128, colors, palette)
-  ).toS2CPacket()
+  )
 
   class UpdateData(
     val startX: Int,

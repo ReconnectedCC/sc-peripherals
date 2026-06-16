@@ -24,8 +24,7 @@ import io.sc3.peripherals.util.ScreenHandlerPropertyUpdateIntS2CPacket
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry
-import net.fabricmc.fabric.api.client.model.ModelResourceProvider
+import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry
 import net.minecraft.client.gui.screen.ingame.HandledScreens
 import net.minecraft.client.render.RenderLayer
@@ -48,17 +47,21 @@ object ScPeripheralsClient : ClientModInitializer {
     // Allow transparent textures to work in 3D prints
     BlockRenderLayerMap.INSTANCE.putBlock(Registration.ModBlocks.print, RenderLayer.getTranslucent())
 
-    ModelLoadingRegistry.INSTANCE.registerResourceProvider { ModelResourceProvider { id, _ -> when(id) {
-      PrintBlock.id, PrintItem.id -> PrintUnbakedModel()
-      else -> null
-    }}}
+    ModelLoadingPlugin.register { ctx ->
+      ctx.resolveModel().register { resolverCtx ->
+        when (resolverCtx.id()) {
+          PrintBlock.id, PrintItem.id -> PrintUnbakedModel()
+          else -> null
+        }
+      }
+    }
 
-    registerClientReceiver(PrinterInkPacket.id, PrinterInkPacket::fromBytes)
-    registerClientReceiver(PrinterDataPacket.id, PrinterDataPacket::fromBytes)
+    registerClientReceiver(PrinterInkPacket.ID)
+    registerClientReceiver(PrinterDataPacket.ID)
 
-    registerClientReceiver(PosterPrinterInkPacket.id, PosterPrinterInkPacket::fromBytes)
-    registerClientReceiver(PosterPrinterStartPrintPacket.id, PosterPrinterStartPrintPacket::fromBytes)
-    registerClientReceiver(PosterUpdateS2CPacket.id, PosterUpdateS2CPacket::fromBytes)
+    registerClientReceiver(PosterPrinterInkPacket.ID)
+    registerClientReceiver(PosterPrinterStartPrintPacket.ID)
+    registerClientReceiver(PosterUpdateS2CPacket.ID)
 
     ItemFrameEvents.ITEM_RENDER.register(PosterRenderer::renderItemFrame)
 

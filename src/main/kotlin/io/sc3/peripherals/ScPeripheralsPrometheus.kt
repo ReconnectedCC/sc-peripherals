@@ -15,9 +15,10 @@ object ScPeripheralsPrometheus {
 
   fun init() {
     ServerLifecycleEvents.SERVER_STARTING.register {
-      if (ScPeripheralsConfig.config["prometheus.enabled"]) {
-        log.info("Starting Prometheus server on port ${ScPeripheralsConfig.config.get<Int>("prometheus.port")}")
-        prometheusServer = HTTPServer(InetSocketAddress(ScPeripheralsConfig.config["prometheus.port"]), registry, true)
+      if (ScPeripheralsConfig.config.getOrElse("prometheus.enabled", false)) {
+        val port = ScPeripheralsConfig.config.getOrElse("prometheus.port", 9090)
+        log.info("Starting Prometheus server on port $port")
+        prometheusServer = HTTPServer(InetSocketAddress(port), registry, true)
       }
     }
 

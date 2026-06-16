@@ -21,10 +21,10 @@ import net.minecraft.inventory.SidedInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.listener.ClientPlayPacketListener
 import net.minecraft.network.packet.Packet
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap
 class PosterPrinterBlockEntity(
   pos: BlockPos,
   state: BlockState
-) : BaseBlockEntity(posterPrinter, pos, state), ExtendedScreenHandlerFactory, ImplementedInventory, SidedInventory {
+) : BaseBlockEntity(posterPrinter, pos, state), ExtendedScreenHandlerFactory<BlockPos>, ImplementedInventory, SidedInventory {
   private val inventory = DefaultedList.ofSize(INV_SIZE, ItemStack.EMPTY)
 
   /** Set of computers that are attached as a peripheral to the printer, so they may receive print state events. */
@@ -128,7 +128,7 @@ class PosterPrinterBlockEntity(
   private fun canMergeOutput(): Boolean {
     val current = getStack(OUTPUT_SLOT)
     val output = PosterItem.create(world ?: return false, data)
-    return current.isEmpty || ItemStack.canCombine(current, output)
+    return current.isEmpty || ItemStack.areItemsAndComponentsEqual(current, output)
   }
 
   fun canPrint(): Boolean {
@@ -213,7 +213,7 @@ class PosterPrinterBlockEntity(
 
       printCount--
       outputStack = PosterItem.create(world, data)
-      val posterId = outputStack.nbt!!.getString(POSTER_KEY)
+      val posterId = PosterItem.getPosterId(outputStack) ?: return
       data.posterId = posterId // Allow merging with the output stack
       if (printCount < 1) printing = false
 
@@ -249,36 +249,34 @@ class PosterPrinterBlockEntity(
   override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler =
     PosterPrinterScreenHandler(syncId, inv, this, pos, propertyDelegate)
 
-  override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
-    buf.writeBlockPos(pos)
-  }
+  override fun getScreenOpeningData(player: ServerPlayerEntity): BlockPos = pos
 
   override fun getDisplayName(): Text = Text.translatable(cachedState.block.translationKey)
 
-  override fun readNbt(nbt: NbtCompound) {
-    super.readNbt(nbt)
+  override fun readNbt(nbt: NbtCompound, registries: RegistryWrapper.WrapperLookup) {
+    super.readNbt(nbt, registries)
 
     inventory.clear()
-    Inventories.readNbt(nbt, inventory)
+    Inventories.readNbt(nbt, inventory, registries)
 
     data = PosterPrintData.fromNbt(nbt.getCompound("data"))
     printing = nbt.getBoolean("printing")
     printCount = nbt.getInt("printCount")
-    outputStack = nbt.optCompound("outputStack")?.let { ItemStack.fromNbt(it) } ?: ItemStack.EMPTY
+    outputStack = nbt.optCompound("outputStack")?.let { ItemStack.fromNbtOrEmpty(registries, it) } ?: ItemStack.EMPTY
 
     ink = nbt.getInt("ink")
     printProgress = nbt.getInt("printProgress")
   }
 
-  override fun writeNbt(nbt: NbtCompound) {
-    super.writeNbt(nbt)
+  override fun writeNbt(nbt: NbtCompound, registries: RegistryWrapper.WrapperLookup) {
+    super.writeNbt(nbt, registries)
 
-    Inventories.writeNbt(nbt, inventory)
+    Inventories.writeNbt(nbt, inventory, registries)
 
     nbt.put("data", data.toNbt())
     nbt.putBoolean("printing", printing)
     nbt.putInt("printCount", printCount)
-    nbt.put("outputStack", outputStack.writeNbt(NbtCompound()))
+    if (!outputStack.isEmpty) nbt.put("outputStack", outputStack.encode(registries))
 
     nbt.putInt("ink", ink)
     nbt.putInt("printProgress", printProgress)
@@ -287,9 +285,9 @@ class PosterPrinterBlockEntity(
   override fun toUpdatePacket(): Packet<ClientPlayPacketListener> =
     BlockEntityUpdateS2CPacket.create(this)
 
-  override fun toInitialChunkDataNbt(): NbtCompound {
-    val nbt = super.toInitialChunkDataNbt()
-    writeNbt(nbt)
+  override fun toInitialChunkDataNbt(registries: RegistryWrapper.WrapperLookup): NbtCompound {
+    val nbt = super.toInitialChunkDataNbt(registries)
+    writeNbt(nbt, registries)
     nbt.remove("data") // Don't send the print data to the client
 
     return nbt

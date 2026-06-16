@@ -120,10 +120,10 @@ object PosterRenderer : AutoCloseable {
   fun drawBackground(matrices: MatrixStack, vertexConsumers: VertexConsumerProvider, swingProgress: Int) {
     val vertexConsumer = vertexConsumers.getBuffer(POSTER_BACKGROUND)
     val matrix4f = matrices.peek().positionMatrix
-    vertexConsumer.vertex(matrix4f, -7.0f, 135.0f, 0.0f).color(255, 255, 255, 255).texture(0.0f, 1.0f).light(swingProgress).next()
-    vertexConsumer.vertex(matrix4f, 135.0f, 135.0f, 0.0f).color(255, 255, 255, 255).texture(1.0f, 1.0f).light(swingProgress).next()
-    vertexConsumer.vertex(matrix4f, 135.0f, -7.0f, 0.0f).color(255, 255, 255, 255).texture(1.0f, 0.0f).light(swingProgress).next()
-    vertexConsumer.vertex(matrix4f, -7.0f, -7.0f, 0.0f).color(255, 255, 255, 255).texture(0.0f, 0.0f).light(swingProgress).next()
+    vertexConsumer.vertex(matrix4f, -7.0f, 135.0f, 0.0f).color(255, 255, 255, 255).texture(0.0f, 1.0f).light(swingProgress)
+    vertexConsumer.vertex(matrix4f, 135.0f, 135.0f, 0.0f).color(255, 255, 255, 255).texture(1.0f, 1.0f).light(swingProgress)
+    vertexConsumer.vertex(matrix4f, 135.0f, -7.0f, 0.0f).color(255, 255, 255, 255).texture(1.0f, 0.0f).light(swingProgress)
+    vertexConsumer.vertex(matrix4f, -7.0f, -7.0f, 0.0f).color(255, 255, 255, 255).texture(0.0f, 0.0f).light(swingProgress)
   }
 
   fun drawBackgroundCropped(
@@ -195,16 +195,16 @@ object PosterRenderer : AutoCloseable {
 
       val matrix4f = matrices.peek().positionMatrix
       val vertexConsumer = vertexConsumers.getBuffer(renderLayer)
-      vertexConsumer.vertex(matrix4f, 0.0f, 128.0f, -0.01f).color(255, 255, 255, 255).texture(0.0f, 1.0f).light(light).next()
-      vertexConsumer.vertex(matrix4f, 128.0f, 128.0f, -0.01f).color(255, 255, 255, 255).texture(1.0f, 1.0f).light(light).next()
-      vertexConsumer.vertex(matrix4f, 128.0f, 0.0f, -0.01f).color(255, 255, 255, 255).texture(1.0f, 0.0f).light(light).next()
-      vertexConsumer.vertex(matrix4f, 0.0f, 0.0f, -0.01f).color(255, 255, 255, 255).texture(0.0f, 0.0f).light(light).next()
+      vertexConsumer.vertex(matrix4f, 0.0f, 128.0f, -0.01f).color(255, 255, 255, 255).texture(0.0f, 1.0f).light(light)
+      vertexConsumer.vertex(matrix4f, 128.0f, 128.0f, -0.01f).color(255, 255, 255, 255).texture(1.0f, 1.0f).light(light)
+      vertexConsumer.vertex(matrix4f, 128.0f, 0.0f, -0.01f).color(255, 255, 255, 255).texture(1.0f, 0.0f).light(light)
+      vertexConsumer.vertex(matrix4f, 0.0f, 0.0f, -0.01f).color(255, 255, 255, 255).texture(0.0f, 0.0f).light(light)
 
       if (doubleSided) {
-        vertexConsumer.vertex(matrix4f, 0.0f, 0.0f, -0.01f).color(255, 255, 255, 255).texture(0.0f, 0.0f).light(light).next()
-        vertexConsumer.vertex(matrix4f, 128.0f, 0.0f, -0.01f).color(255, 255, 255, 255).texture(1.0f, 0.0f).light(light).next()
-        vertexConsumer.vertex(matrix4f, 128.0f, 128.0f, -0.01f).color(255, 255, 255, 255).texture(1.0f, 1.0f).light(light).next()
-        vertexConsumer.vertex(matrix4f, 0.0f, 128.0f, -0.01f).color(255, 255, 255, 255).texture(0.0f, 1.0f).light(light).next()
+        vertexConsumer.vertex(matrix4f, 0.0f, 0.0f, -0.01f).color(255, 255, 255, 255).texture(0.0f, 0.0f).light(light)
+        vertexConsumer.vertex(matrix4f, 128.0f, 0.0f, -0.01f).color(255, 255, 255, 255).texture(1.0f, 0.0f).light(light)
+        vertexConsumer.vertex(matrix4f, 128.0f, 128.0f, -0.01f).color(255, 255, 255, 255).texture(1.0f, 1.0f).light(light)
+        vertexConsumer.vertex(matrix4f, 0.0f, 128.0f, -0.01f).color(255, 255, 255, 255).texture(0.0f, 1.0f).light(light)
       }
     }
 
@@ -237,10 +237,10 @@ object PosterRenderer : AutoCloseable {
       uvOffsetX: Float = 0f,
       uvOffsetY: Float = 0f
   ) {
-    vertexConsumer.vertex(matrix4f, x, y + height, z).color(255, 255, 255, 255).texture((x + uvOffsetX) / size, (y + uvOffsetY + height) / size).light(light).next()
-    vertexConsumer.vertex(matrix4f, x + width, y + height, z).color(255, 255, 255, 255).texture((x + uvOffsetX + width) / size, (y + uvOffsetY + height) / size).light(light).next()
-    vertexConsumer.vertex(matrix4f, x + width, y, z).color(255, 255, 255, 255).texture((x + uvOffsetX + width) / size, (y + uvOffsetY) / size).light(light).next()
-    vertexConsumer.vertex(matrix4f, x, y, z).color(255, 255, 255, 255).texture((x + uvOffsetX) / size, (y + uvOffsetY) / size).light(light).next()
+    vertexConsumer.vertex(matrix4f, x, y + height, z).color(255, 255, 255, 255).texture((x + uvOffsetX) / size, (y + uvOffsetY + height) / size).light(light)
+    vertexConsumer.vertex(matrix4f, x + width, y + height, z).color(255, 255, 255, 255).texture((x + uvOffsetX + width) / size, (y + uvOffsetY + height) / size).light(light)
+    vertexConsumer.vertex(matrix4f, x + width, y, z).color(255, 255, 255, 255).texture((x + uvOffsetX + width) / size, (y + uvOffsetY) / size).light(light)
+    vertexConsumer.vertex(matrix4f, x, y, z).color(255, 255, 255, 255).texture((x + uvOffsetX) / size, (y + uvOffsetY) / size).light(light)
   }
 
   @JvmStatic

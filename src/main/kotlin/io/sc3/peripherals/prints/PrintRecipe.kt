@@ -1,21 +1,22 @@
 package io.sc3.peripherals.prints
 
 import io.sc3.peripherals.Registration.ModItems
-import net.minecraft.inventory.RecipeInputInventory
+import net.minecraft.component.DataComponentTypes
+import net.minecraft.component.type.NbtComponent
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.recipe.Ingredient.ofItems
 import net.minecraft.recipe.SpecialCraftingRecipe
 import net.minecraft.recipe.SpecialRecipeSerializer
 import net.minecraft.recipe.book.CraftingRecipeCategory
-import net.minecraft.registry.DynamicRegistryManager
-import net.minecraft.util.Identifier
+import net.minecraft.recipe.input.CraftingRecipeInput
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.world.World
 
 class PrintRecipe(
-  id: Identifier,
   category: CraftingRecipeCategory = CraftingRecipeCategory.MISC
-) : SpecialCraftingRecipe(id, category) {
+) : SpecialCraftingRecipe(category) {
   private val outputItem = ItemStack(ModItems.print)
 
   private val print = ofItems(ModItems.print)
@@ -24,11 +25,11 @@ class PrintRecipe(
   private val beaconBlocks = ofItems(IRON_BLOCK, GOLD_BLOCK, DIAMOND_BLOCK, EMERALD_BLOCK)
   private val honeyBlock = ofItems(HONEY_BLOCK)
 
-  private fun items(inv: RecipeInputInventory): RecipeItems? {
+  private fun items(inv: CraftingRecipeInput): RecipeItems? {
     val items = RecipeItems()
 
-    for (i in 0 until inv.size()) {
-      val stack = inv.getStack(i)
+    for (i in 0 until inv.size) {
+      val stack = inv.getStackInSlot(i)
       if (stack.isEmpty) continue
 
       when {
@@ -72,32 +73,30 @@ class PrintRecipe(
     return items
   }
 
-  override fun matches(inv: RecipeInputInventory, world: World) =
+  override fun matches(inv: CraftingRecipeInput, world: World) =
     items(inv) != null
 
-  override fun craft(inv: RecipeInputInventory, manager: DynamicRegistryManager): ItemStack {
-    // Validate the crafting inputs and calculate what needs to be modified. Refuse to craft if any resources will be
-    // wasted.
+  override fun craft(inv: CraftingRecipeInput, registries: RegistryWrapper.WrapperLookup): ItemStack {
     val items = items(inv) ?: return ItemStack.EMPTY
     val print = items.print ?: return ItemStack.EMPTY
 
     val result = print.copyWithCount(1)
 
-    // Get a fresh PrintData instance from the copy to mutate it
     val data = PrintItem.printData(result)
     data.lightLevel = (data.lightLevel + items.lightIncrease).coerceIn(0, 15)
     if (items.beaconBlock != null) data.isBeaconBlock = true
     if (items.honeyBlock != null) data.isQuiet = true
 
-    val nbt = result.nbt ?: return ItemStack.EMPTY
-    nbt.put("data", data.toNbt())
+    val outerNbt = result.get(DataComponentTypes.CUSTOM_DATA)?.copyNbt() ?: NbtCompound()
+    outerNbt.put("data", data.toNbt())
+    result.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(outerNbt))
 
     return result
   }
 
   override fun fits(width: Int, height: Int) = width * height >= 2
   override fun getSerializer() = recipeSerializer
-  override fun getOutput(manager: DynamicRegistryManager) = outputItem
+  override fun getResult(registries: RegistryWrapper.WrapperLookup) = outputItem
   override fun isIgnoredInRecipeBook() = true
 
   data class RecipeItems(

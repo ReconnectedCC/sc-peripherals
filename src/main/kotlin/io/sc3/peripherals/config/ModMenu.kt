@@ -18,7 +18,7 @@ class ModMenu: ModMenuApi {
     client.addEntry(builder.entryBuilder()
       .startIntSlider(
         of("Max Poster Requests Per Tick"),
-        ScPeripheralsClientConfig.config["maxPosterRequestsPerTick"], 1, 50
+        ScPeripheralsClientConfig.config.getOrElse("maxPosterRequestsPerTick", 20), 1, 50
       )
       .setDefaultValue(20)
       .setSaveConsumer { ScPeripheralsClientConfig.config.set("maxPosterRequestsPerTick", it) }

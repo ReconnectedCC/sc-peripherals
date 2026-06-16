@@ -1,11 +1,13 @@
 package io.sc3.peripherals.prints.printer
 
+import com.mojang.serialization.MapCodec
 import io.sc3.library.WaterloggableBlock
 import io.sc3.library.WaterloggableBlock.Companion.waterlogged
 import io.sc3.peripherals.Registration.ModBlockEntities.printer
 import io.sc3.peripherals.util.BaseBlockWithEntity
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
+import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
@@ -17,7 +19,6 @@ import net.minecraft.state.property.Properties
 import net.minecraft.util.ActionResult
 import net.minecraft.util.BlockMirror
 import net.minecraft.util.BlockRotation
-import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
@@ -25,13 +26,15 @@ import net.minecraft.world.World
 import net.minecraft.world.WorldAccess
 
 class PrinterBlock(settings: Settings) : BaseBlockWithEntity(settings), WaterloggableBlock {
+  override fun getCodec(): MapCodec<out BlockWithEntity> = throw UnsupportedOperationException()
+
   init {
     defaultState = defaultState
       .with(facing, Direction.NORTH)
       .with(waterlogged, false)
   }
 
-  override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand,
+  override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity,
                      hit: BlockHitResult): ActionResult {
     if (!world.isClient) {
       val factory = state.createScreenHandlerFactory(world, pos)
@@ -50,7 +53,7 @@ class PrinterBlock(settings: Settings) : BaseBlockWithEntity(settings), Waterlog
     type: BlockEntityType<T>
   ): BlockEntityTicker<T>? {
     if (world.isClient) return null
-    return checkType(type, printer, PrinterBlockEntity.Companion::onTick)
+    return validateTicker(type, printer, PrinterBlockEntity.Companion::onTick)
   }
 
   override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {

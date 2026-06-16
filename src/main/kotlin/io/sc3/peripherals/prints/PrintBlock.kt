@@ -1,5 +1,6 @@
 package io.sc3.peripherals.prints
 
+import com.mojang.serialization.MapCodec
 import io.sc3.library.SeatBlock
 import io.sc3.library.WaterloggableBlock
 import io.sc3.library.WaterloggableBlock.Companion.waterlogged
@@ -10,6 +11,7 @@ import io.sc3.peripherals.ScPeripherals.ModId
 import io.sc3.peripherals.util.BaseBlockWithEntity
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
+import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.Blocks
 import net.minecraft.block.ShapeContext
 import net.minecraft.entity.LivingEntity
@@ -27,7 +29,6 @@ import net.minecraft.state.property.Properties
 import net.minecraft.util.ActionResult
 import net.minecraft.util.BlockMirror
 import net.minecraft.util.BlockRotation
-import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
@@ -38,8 +39,11 @@ import net.minecraft.util.shape.VoxelShapes
 import net.minecraft.world.BlockView
 import net.minecraft.world.World
 import net.minecraft.world.WorldAccess
+import net.minecraft.world.WorldView
 
 class PrintBlock(settings: Settings) : BaseBlockWithEntity(settings), WaterloggableBlock, SeatBlock {
+  override fun getCodec(): MapCodec<out BlockWithEntity> = throw UnsupportedOperationException()
+
   init {
     defaultState = defaultState
       .with(facing, Direction.NORTH)
@@ -66,7 +70,7 @@ class PrintBlock(settings: Settings) : BaseBlockWithEntity(settings), Waterlogga
     .with(waterlogged, placementWaterlogged(ctx))
     .with(luminance, placementLuminance(ctx))
 
-  override fun getPickStack(world: BlockView, pos: BlockPos, state: BlockState): ItemStack {
+  override fun getPickStack(world: WorldView, pos: BlockPos, state: BlockState): ItemStack {
     val be = blockEntity(world, pos) ?: return ItemStack.EMPTY
     return PrintItem.fromBlockEntity(be)
   }
@@ -121,9 +125,9 @@ class PrintBlock(settings: Settings) : BaseBlockWithEntity(settings), Waterlogga
     if (state.get(on)) world.scheduleBlockTick(pos, this, toggleTicks)
   }
 
-  override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand,
+  override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity,
                      hit: BlockHitResult): ActionResult {
-    val be = blockEntity(world, pos) ?: return super.onUse(state, world, pos, player, hand, hit)
+    val be = blockEntity(world, pos) ?: return super.onUse(state, world, pos, player, hit)
     if (be.canTurnOn) be.toggle()
     return ActionResult.success(world.isClient)
   }

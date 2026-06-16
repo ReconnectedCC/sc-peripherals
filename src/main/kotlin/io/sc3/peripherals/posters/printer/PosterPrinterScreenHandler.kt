@@ -10,7 +10,6 @@ import net.minecraft.inventory.Inventory
 import net.minecraft.inventory.SimpleInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ArrayPropertyDelegate
 import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
@@ -40,8 +39,8 @@ class PosterPrinterScreenHandler(
 
   val be by lazy { playerInv.player.world.getBlockEntity(pos) as? PosterPrinterBlockEntity }
 
-  constructor(syncId: Int, playerInv: PlayerInventory, buf: PacketByteBuf) :
-    this(syncId, playerInv, SimpleInventory(3), buf.readBlockPos(), ArrayPropertyDelegate(4))
+  constructor(syncId: Int, playerInv: PlayerInventory, pos: BlockPos) :
+    this(syncId, playerInv, SimpleInventory(3), pos, ArrayPropertyDelegate(4))
 
   init {
     checkSize(inv, 3)

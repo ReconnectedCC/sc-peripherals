@@ -40,7 +40,7 @@ class PrinterScreen(
   }
 
   override fun render(ctx: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-    renderBackground(ctx)
+    renderBackground(ctx, mouseX, mouseY, delta)
 
     chameliumBar.progress = handler.chamelium
     inkBar.progress = handler.ink

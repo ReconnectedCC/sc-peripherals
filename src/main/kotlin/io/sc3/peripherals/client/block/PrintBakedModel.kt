@@ -71,7 +71,7 @@ class PrintBakedModel(
     // If the renderer is null, return missingModel before trying to do anything else
     // Quick-fail for completely empty item stacks (REI, JEI, etc)
     val builder = meshBuilder.get()
-    if (builder == null || !stack.hasNbt()) {
+    if (builder == null || !stack.contains(net.minecraft.component.DataComponentTypes.CUSTOM_DATA)) {
       missingModel.emitItemQuads(stack, randomSupplier, ctx)
       return
     }

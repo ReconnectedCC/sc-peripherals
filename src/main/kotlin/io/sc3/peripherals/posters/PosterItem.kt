@@ -10,13 +10,14 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.tooltip.TooltipComponent
-import net.minecraft.client.item.TooltipContext
-import net.minecraft.client.item.TooltipData
-import net.minecraft.client.render.BufferBuilder
+import net.minecraft.item.tooltip.TooltipData
 import net.minecraft.client.render.LightmapTextureManager.MAX_LIGHT_COORDINATE
-import net.minecraft.client.render.Tessellator
 import net.minecraft.client.render.VertexConsumerProvider
+import net.minecraft.component.DataComponentTypes
+import net.minecraft.component.type.NbtComponent
+import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtIo
@@ -35,13 +36,13 @@ class PosterItem(settings: Settings) : BaseItem("poster", settings) {
 
   override fun getName(stack: ItemStack): Text = printData(stack)?.labelText ?: super.getName(stack)
 
-  override fun appendTooltip(stack: ItemStack, world: World?, tooltip: MutableList<Text>, context: TooltipContext) {
+  override fun appendTooltip(stack: ItemStack, context: Item.TooltipContext, tooltip: MutableList<Text>, type: TooltipType) {
     val id = getPosterId(stack)
 
     val data = printData(stack) ?: return
     data.tooltip?.let { tooltip.add(Text.literal(it)) }
 
-    if (context.isAdvanced) {
+    if (type.isAdvanced) {
       if (id != null) {
         tooltip.add(Text.translatable("${translationKey}.id", id.take(8)).formatted(Formatting.GRAY))
       } else {
@@ -68,8 +69,7 @@ class PosterItem(settings: Settings) : BaseItem("poster", settings) {
       matrices.scale(scale, scale, 1f)
       RenderSystem.enableBlend()
       ctx.drawTexture(POSTER_BACKGROUND_RES, -pad, -pad, -1, 0f, 0f, size, size, size, size)
-      val buffer: BufferBuilder = Tessellator.getInstance().buffer
-      val immediateBuffer = VertexConsumerProvider.immediate(buffer)
+      val immediateBuffer = ctx.vertexConsumers
       PosterRenderer.draw(matrices, immediateBuffer, posterId, posterState, MAX_LIGHT_COORDINATE)
       immediateBuffer.draw()
       matrices.pop()
@@ -115,10 +115,10 @@ class PosterItem(settings: Settings) : BaseItem("poster", settings) {
     }
 
     private fun setPosterId(stack: ItemStack, id: String, data: PosterPrintData) {
-      with (stack.orCreateNbt) {
-        putString(POSTER_KEY, id)
-        copyFrom(data.toItemNbt())
-      }
+      val nbt = stack.get(DataComponentTypes.CUSTOM_DATA)?.copyNbt() ?: NbtCompound()
+      nbt.putString(POSTER_KEY, id)
+      nbt.copyFrom(data.toItemNbt())
+      stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt))
     }
 
     private fun createPosterState(
@@ -155,7 +155,7 @@ class PosterItem(settings: Settings) : BaseItem("poster", settings) {
     private fun allocateHash(world: World, data: PosterState): String {
       val contents = ByteArrayOutputStream().use { baos ->
         DataOutputStream(baos).use { dos ->
-          NbtIo.write(data.writeNbt(NbtCompound()), dos)
+          NbtIo.write(data.writeNbt(NbtCompound(), world.registryManager), dos)
           baos.toByteArray()
         }
       }
@@ -179,7 +179,7 @@ class PosterItem(settings: Settings) : BaseItem("poster", settings) {
     }
 
     fun getPosterId(stack: ItemStack?): String? {
-      return stack?.nbt?.let {
+      return stack?.get(DataComponentTypes.CUSTOM_DATA)?.copyNbt()?.let {
         if (it.contains(POSTER_KEY, NbtElement.STRING_TYPE.toInt())) it.getString(POSTER_KEY) else null
       }
     }
@@ -189,6 +189,6 @@ class PosterItem(settings: Settings) : BaseItem("poster", settings) {
     }
 
     fun printData(stack: ItemStack): PosterPrintData?
-      = stack.nbt?.let { PosterPrintData.fromNbt(it) }
+      = stack.get(DataComponentTypes.CUSTOM_DATA)?.copyNbt()?.let { PosterPrintData.fromNbt(it) }
   }
 }

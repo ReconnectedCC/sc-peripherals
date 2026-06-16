@@ -2,41 +2,43 @@ package io.sc3.peripherals.posters.printer
 
 import io.sc3.library.networking.ScLibraryPacket
 import io.sc3.peripherals.ScPeripherals.ModId
-import net.fabricmc.fabric.api.networking.v1.PacketSender
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.network.ClientPlayNetworkHandler
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.RegistryByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.math.BlockPos
 
 data class PosterPrinterInkPacket(
   val pos: BlockPos,
   val ink: Int
 ) : ScLibraryPacket() {
-  override val id = PosterPrinterInkPacket.id
+  override fun getId() = ID
 
-  companion object {
-    val id = ModId("poster_printer_ink")
-
-    fun fromBytes(buf: PacketByteBuf) = buf.run {
-      PosterPrinterInkPacket(
-        pos = readBlockPos(),
-        ink = readInt()
-      )
-    }
+  fun toBytes(buf: PacketByteBuf) {
+    buf.writeBlockPos(pos)
+    buf.writeInt(ink)
   }
 
-  override fun toBytes(buf: PacketByteBuf) {
-    with(buf) {
-      writeBlockPos(pos)
-      writeInt(ink)
-    }
-  }
+  override fun onServerReceive(context: ServerPlayNetworking.Context) {}
 
-  override fun onClientReceive(client: MinecraftClient, handler: ClientPlayNetworkHandler,
-                               responseSender: PacketSender) {
-    super.onClientReceive(client, handler, responseSender)
-
+  override fun onClientReceive(context: ClientPlayNetworking.Context) {
+    val client = context.client()
     val printer = client.world?.getBlockEntity(pos) as? PosterPrinterBlockEntity ?: return
     printer.ink = ink
+  }
+
+  companion object {
+    val ID = CustomPayload.Id<PosterPrinterInkPacket>(ModId("poster_printer_ink"))
+    val CODEC: PacketCodec<RegistryByteBuf, PosterPrinterInkPacket> = PacketCodec.of(
+      { pkt, buf -> pkt.toBytes(buf) },
+      { buf -> fromBytes(buf) }
+    )
+
+    fun fromBytes(buf: PacketByteBuf) = PosterPrinterInkPacket(
+      pos = buf.readBlockPos(),
+      ink = buf.readInt()
+    )
   }
 }

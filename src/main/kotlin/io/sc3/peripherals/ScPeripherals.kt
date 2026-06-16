@@ -9,7 +9,7 @@ object ScPeripherals : ModInitializer {
   internal val log = LoggerFactory.getLogger("ScPeripherals")!!
 
   internal const val modId = "sc-peripherals"
-  internal fun ModId(value: String) = Identifier(modId, value)
+  internal fun ModId(value: String) = Identifier.of(modId, value)
 
   override fun onInitialize() {
     log.info("sc-peripherals initializing")

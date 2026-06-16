@@ -5,6 +5,7 @@ import io.sc3.peripherals.posters.PosterItem
 import io.sc3.peripherals.util.toFloatList
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.component.DataComponentTypes
 import net.minecraft.entity.LivingEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtElement
@@ -48,7 +49,7 @@ object PosterHeadFeatureRenderer {
       // apply injected matrix
       if (APPLY_TRANSFORMS_EVENT.invoker().invoke(matrices, entity, itemStack) != ActionResult.PASS) {
         // apply user-defined matrix
-        itemStack.nbt?.let {
+        itemStack.get(DataComponentTypes.CUSTOM_DATA)?.copyNbt()?.let {
           if (it.contains("translate")) {
             val list = it.getList("translate", NbtElement.FLOAT_TYPE.toInt()).toFloatList()
             if (list.size == 3) matrices.translate(list[0], list[1], list[2])

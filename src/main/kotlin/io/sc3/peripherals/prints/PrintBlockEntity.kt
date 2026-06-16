@@ -9,6 +9,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.listener.ClientPlayPacketListener
 import net.minecraft.network.packet.Packet
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.util.math.BlockPos
@@ -84,17 +85,17 @@ class PrintBlockEntity(
     }
   }
 
-  override fun readNbt(nbt: NbtCompound) {
-    super.readNbt(nbt)
+  override fun readNbt(nbt: NbtCompound, registries: RegistryWrapper.WrapperLookup) {
+    super.readNbt(nbt, registries)
     nbt.optCompound("data")?.let { data = PrintData.fromNbt(it) }
   }
 
-  override fun writeNbt(nbt: NbtCompound) {
-    super.writeNbt(nbt)
+  override fun writeNbt(nbt: NbtCompound, registries: RegistryWrapper.WrapperLookup) {
+    super.writeNbt(nbt, registries)
     nbt.put("data", data.toNbt())
   }
 
-  override fun toInitialChunkDataNbt(): NbtCompound = createNbt()
+  override fun toInitialChunkDataNbt(registries: RegistryWrapper.WrapperLookup): NbtCompound = createNbt(registries)
 
   override fun toUpdatePacket(): Packet<ClientPlayPacketListener>? =
     if (dataDirty) {

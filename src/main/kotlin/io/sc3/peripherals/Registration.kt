@@ -12,17 +12,24 @@ import io.sc3.peripherals.item.InkCartridgeItem
 import io.sc3.peripherals.item.TextureAnalyzerItem
 import io.sc3.peripherals.posters.PosterItem
 import io.sc3.peripherals.posters.PosterRequestC2SPacket
+import io.sc3.peripherals.posters.PosterUpdateS2CPacket
 import io.sc3.peripherals.posters.printer.PosterPrinterBlock
 import io.sc3.peripherals.posters.printer.PosterPrinterBlockEntity
+import io.sc3.peripherals.posters.printer.PosterPrinterInkPacket
 import io.sc3.peripherals.posters.printer.PosterPrinterScreenHandler
+import io.sc3.peripherals.posters.printer.PosterPrinterStartPrintPacket
 import io.sc3.peripherals.prints.PrintBlock
 import io.sc3.peripherals.prints.PrintBlockEntity
 import io.sc3.peripherals.prints.PrintItem
 import io.sc3.peripherals.prints.printer.PrinterBlock
 import io.sc3.peripherals.prints.printer.PrinterBlockEntity
+import io.sc3.peripherals.prints.printer.PrinterDataPacket
+import io.sc3.peripherals.prints.printer.PrinterInkPacket
 import io.sc3.peripherals.prints.printer.PrinterScreenHandler
+import io.sc3.peripherals.util.ScreenHandlerPropertyUpdateIntS2CPacket
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
 import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType
 import net.minecraft.block.AbstractBlock
 import net.minecraft.block.Block
@@ -30,7 +37,7 @@ import net.minecraft.block.BlockState
 import net.minecraft.block.MapColor
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
-import net.minecraft.block.enums.Instrument
+import net.minecraft.block.enums.NoteBlockInstrument
 import net.minecraft.item.BlockItem
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -38,7 +45,7 @@ import net.minecraft.registry.Registries.*
 import net.minecraft.registry.Registry.register
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
-import net.minecraft.resource.featuretoggle.FeatureFlags
+import net.minecraft.resource.featuretoggle.FeatureSet
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.text.Text
 import net.minecraft.util.math.BlockPos
@@ -64,7 +71,16 @@ object Registration {
     PeripheralLookup.get().registerForBlockEntity({ be, _ -> be.peripheral }, ModBlockEntities.printer)
     PeripheralLookup.get().registerForBlockEntity({ be, _ -> be.peripheral }, ModBlockEntities.posterPrinter)
 
-    registerServerReceiver(PosterRequestC2SPacket.id, PosterRequestC2SPacket::fromBytes)
+    // Register payload types (must be on both sides)
+    PayloadTypeRegistry.playC2S().register(PosterRequestC2SPacket.ID, PosterRequestC2SPacket.CODEC)
+    PayloadTypeRegistry.playS2C().register(PrinterInkPacket.ID, PrinterInkPacket.CODEC)
+    PayloadTypeRegistry.playS2C().register(PrinterDataPacket.ID, PrinterDataPacket.CODEC)
+    PayloadTypeRegistry.playS2C().register(PosterPrinterInkPacket.ID, PosterPrinterInkPacket.CODEC)
+    PayloadTypeRegistry.playS2C().register(PosterPrinterStartPrintPacket.ID, PosterPrinterStartPrintPacket.CODEC)
+    PayloadTypeRegistry.playS2C().register(PosterUpdateS2CPacket.ID, PosterUpdateS2CPacket.CODEC)
+    PayloadTypeRegistry.playS2C().register(ScreenHandlerPropertyUpdateIntS2CPacket.ID, ScreenHandlerPropertyUpdateIntS2CPacket.CODEC)
+
+    registerServerReceiver(PosterRequestC2SPacket.ID)
   }
 
   object ModBlocks {
@@ -84,7 +100,7 @@ object Registration {
 
     private fun settings() = AbstractBlock.Settings.create()
       .mapColor(MapColor.STONE_GRAY)
-      .instrument(Instrument.BASEDRUM)
+      .instrument(NoteBlockInstrument.BASEDRUM)
       .strength(2.0f)
       .nonOpaque()
   }
@@ -125,8 +141,8 @@ object Registration {
 
   object ModScreens {
     val printer: ScreenHandlerType<PrinterScreenHandler> = register(SCREEN_HANDLER, ModId("printer"),
-      ScreenHandlerType(::PrinterScreenHandler, FeatureFlags.VANILLA_FEATURES))
-    val posterPrinter: ExtendedScreenHandlerType<PosterPrinterScreenHandler> = register(SCREEN_HANDLER, ModId("poster_printer"),
-      ExtendedScreenHandlerType(::PosterPrinterScreenHandler))
+      ScreenHandlerType(::PrinterScreenHandler, FeatureSet.empty()))
+    val posterPrinter: ExtendedScreenHandlerType<PosterPrinterScreenHandler, BlockPos> = register(SCREEN_HANDLER, ModId("poster_printer"),
+      ExtendedScreenHandlerType({ syncId, inv, pos -> PosterPrinterScreenHandler(syncId, inv, pos) }, BlockPos.PACKET_CODEC))
   }
 }

@@ -5,21 +5,24 @@ import io.sc3.peripherals.Registration.ModBlocks
 import io.sc3.peripherals.Registration.ModItems
 import io.sc3.peripherals.ScPeripherals.ModId
 import io.sc3.peripherals.ScPeripherals.modId
-import net.minecraft.client.item.TooltipContext
+import net.minecraft.component.DataComponentTypes
+import net.minecraft.component.type.NbtComponent
 import net.minecraft.item.BlockItem
+import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.item.tooltip.TooltipType
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
 import net.minecraft.text.Text.literal
 import net.minecraft.text.Text.translatable
 import net.minecraft.util.Formatting.GRAY
-import net.minecraft.world.World
 
 class PrintItem(settings: Settings) : BlockItem(ModBlocks.print, settings) {
   override fun getName(stack: ItemStack): Text {
     return printData(stack).labelText ?: return super.getName(stack)
   }
 
-  override fun appendTooltip(stack: ItemStack, world: World?, tooltip: MutableList<Text>, context: TooltipContext) {
+  override fun appendTooltip(stack: ItemStack, context: Item.TooltipContext, tooltip: MutableList<Text>, type: TooltipType) {
     // Don't call super here
     val data = printData(stack)
     data.tooltip?.let { tooltip.add(literal(it)) }
@@ -38,15 +41,18 @@ class PrintItem(settings: Settings) : BlockItem(ModBlocks.print, settings) {
     val id = ModId("item/print")
 
     fun printData(stack: ItemStack): PrintData =
-      stack.orCreateNbt.optCompound("data")?.let { PrintData.fromNbt(it) } ?: PrintData()
+      stack.get(DataComponentTypes.CUSTOM_DATA)?.copyNbt()?.optCompound("data")?.let { PrintData.fromNbt(it) } ?: PrintData()
 
     fun fromBlockEntity(be: PrintBlockEntity): ItemStack = ItemStack(ModItems.print).apply {
-      val data = be.data
-      orCreateNbt.put("data", data.toNbt())
+      val nbt = NbtCompound()
+      nbt.put("data", be.data.toNbt())
+      set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt))
     }
 
     fun create(data: PrintData): ItemStack = ItemStack(ModItems.print).apply {
-      orCreateNbt.put("data", data.toNbt())
+      val nbt = NbtCompound()
+      nbt.put("data", data.toNbt())
+      set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt))
     }
 
     @JvmStatic
@@ -59,19 +65,25 @@ class PrintItem(settings: Settings) : BlockItem(ModBlocks.print, settings) {
 
     @JvmStatic
     fun setCustomName(stack: ItemStack, name: Text?) {
-      val data = stack.getSubNbt("data") ?: return
+      val outerNbt = stack.get(DataComponentTypes.CUSTOM_DATA)?.copyNbt() ?: NbtCompound()
+      val data = outerNbt.optCompound("data") ?: NbtCompound().also { outerNbt.put("data", it) }
       val newLabel = PrintData.sanitiseLabel(name?.string)
       if (newLabel == null) {
-        data.remove("label") // TODO: Make NbtExt.putOptString remove the key if it is present
+        data.remove("label")
       } else {
         data.putString("label", newLabel)
       }
+      outerNbt.put("data", data)
+      stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(outerNbt))
     }
 
     @JvmStatic
     fun removeCustomName(stack: ItemStack) {
-      val data = stack.getSubNbt("data") ?: return
+      val outerNbt = stack.get(DataComponentTypes.CUSTOM_DATA)?.copyNbt() ?: return
+      val data = outerNbt.optCompound("data") ?: return
       data.remove("label")
+      outerNbt.put("data", data)
+      stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(outerNbt))
     }
   }
 }
