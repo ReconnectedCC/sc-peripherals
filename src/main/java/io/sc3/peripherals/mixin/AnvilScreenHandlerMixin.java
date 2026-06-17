@@ -7,14 +7,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.AnvilScreenHandler;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AnvilScreenHandler.class)
 public class AnvilScreenHandlerMixin {
-  @Shadow protected CraftingResultInventory output;
+  @Unique
+  protected CraftingResultInventory output;
 
   @Inject(method = "updateResult", at = @At("RETURN"))
   private void updateResult(CallbackInfo ci) {
