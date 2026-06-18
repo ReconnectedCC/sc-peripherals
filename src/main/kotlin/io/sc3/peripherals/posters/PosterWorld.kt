@@ -1,7 +1,6 @@
 package io.sc3.peripherals.posters
 
 import io.sc3.peripherals.config.ScPeripheralsClientConfig
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.MinecraftClient
@@ -10,7 +9,7 @@ import net.minecraft.world.World
 import kotlin.time.Duration.Companion.seconds
 
 private val posterRequestQueue: MutableList<String> = mutableListOf()
-private val requestedPosters: MutableMap<String, Instant> = mutableMapOf()
+private val requestedPosters: MutableMap<String, kotlin.time.Instant> = mutableMapOf()
 private val requestTimeout = 10.seconds
 
 fun tickPosterRequests(world: ClientWorld) {
@@ -30,9 +29,9 @@ fun World.getPosterState(name: String): PosterState? {
       if (it == null) {
         val posterId = PosterItem.getIdFromName(name)
         val request = requestedPosters[posterId]
-        if (request == null || Clock.System.now() - request > requestTimeout) {
+        if (request == null || kotlin.time.Clock.System.now() - request > requestTimeout) {
           posterRequestQueue.add(posterId)
-          requestedPosters[posterId] = Clock.System.now()
+          requestedPosters[posterId] = kotlin.time.Clock.System.now()
         }
       }
     }

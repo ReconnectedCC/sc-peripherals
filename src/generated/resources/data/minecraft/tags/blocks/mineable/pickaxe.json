@@ -1,8 +1,0 @@
-{
-  "replace": false,
-  "values": [
-    "sc-peripherals:print",
-    "sc-peripherals:printer",
-    "sc-peripherals:poster_printer"
-  ]
-}

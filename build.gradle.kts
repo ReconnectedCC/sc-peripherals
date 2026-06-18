@@ -45,8 +45,8 @@ group = mavenGroup
 tasks.withType<KotlinCompile>().configureEach {
   compilerOptions {
     jvmTarget.set(JvmTarget.JVM_21)
-    apiVersion.set(KotlinVersion.KOTLIN_2_0)
-    languageVersion.set(KotlinVersion.KOTLIN_2_0)
+    apiVersion.set(KotlinVersion.KOTLIN_2_4)
+    languageVersion.set(KotlinVersion.KOTLIN_2_4)
   }
 }
 
