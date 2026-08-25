@@ -12,7 +12,7 @@
       "item": "minecraft:hopper"
     },
     "I": {
-      "tag": "c:iron_ingots"
+      "tag": "c:ingots/iron"
     },
     "P": {
       "item": "minecraft:sticky_piston"

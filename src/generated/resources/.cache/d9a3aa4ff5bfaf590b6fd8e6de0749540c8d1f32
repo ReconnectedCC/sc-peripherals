@@ -1,8 +1,8 @@
-// 1.21.1	2026-06-18T17:30:18.210711788	SwitchCraft Peripherals/Model Definitions
+// 1.21.1	2026-08-25T09:48:42.982314237	SwitchCraft Peripherals/Model Definitions
 830b8cd8fac20b4584e90d55c7eb4d40109e9f45 assets/sc-peripherals/blockstates/print.json
 b2a877bab6197cb78794688b2eb6a9de987ef2c1 assets/sc-peripherals/models/item/printer.json
-563010e043e291398785d27cdb2cd993810844a6 assets/sc-peripherals/models/item/empty_ink_cartridge.json
 4db66f70476281d9beadb51b6387a3a4f12b5953 assets/sc-peripherals/models/item/poster.json
+563010e043e291398785d27cdb2cd993810844a6 assets/sc-peripherals/models/item/empty_ink_cartridge.json
 db3148f0b07b889e3e3da4f80f32162c2be64d0e assets/sc-peripherals/models/block/chamelium.json
 18a469705977539427fbe8fa7326b1e2cc110928 assets/sc-peripherals/models/item/poster_printer.json
 8dbbaa863281ec6d5346bbb37abf84eb8731a20c assets/sc-peripherals/models/item/print.json

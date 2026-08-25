@@ -8,7 +8,7 @@ import io.sc3.peripherals.Registration.ModItems
 import io.sc3.peripherals.ScPeripherals.ModId
 import io.sc3.peripherals.datagen.recipes.inventoryChange
 import io.sc3.peripherals.prints.PrintRecipe
-import net.fabricmc.fabric.api.tag.convention.v1.ConventionalItemTags
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags
 import net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder
 import net.minecraft.data.server.recipe.RecipeExporter
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
@@ -20,6 +20,7 @@ import net.minecraft.registry.Registries
 import net.minecraft.registry.Registries.RECIPE_SERIALIZER
 import net.minecraft.registry.Registry.register
 import net.minecraft.registry.RegistryWrapper
+import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
 
 object PrinterRecipes : RecipeHandler {
@@ -27,7 +28,7 @@ object PrinterRecipes : RecipeHandler {
     register(RECIPE_SERIALIZER, ModId("print"), PrintRecipe.recipeSerializer)
   }
 
-  override fun generateRecipes(exporter: RecipeExporter, registries: RegistryWrapper.WrapperLookup) {
+  override fun generateRecipes(exporter: RecipeExporter, wrapper: RegistryWrapper.WrapperLookup) {
     // Printers
     ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, ModItems.printer)
       .pattern("IHI")
@@ -68,7 +69,7 @@ object PrinterRecipes : RecipeHandler {
       .pattern("GWG")
       .input('G', Items.GRAVEL)
       .input('R', ConventionalItemTags.REDSTONE_DUSTS)
-      .input('C', ConventionalItemTags.COAL)
+      .input('C', ItemTags.COALS)
       .input('W', ConventionalItemTags.WATER_BUCKETS)
       .criterion("has_printer", inventoryChange(ModItems.printer))
       .offerTo(exporter)

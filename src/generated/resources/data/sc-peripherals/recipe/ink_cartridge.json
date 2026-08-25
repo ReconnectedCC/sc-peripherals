@@ -6,22 +6,22 @@
       "item": "minecraft:bucket"
     },
     "C": {
-      "tag": "c:cyan_dyes"
+      "tag": "c:dyes/cyan"
     },
     "D": {
       "item": "minecraft:dispenser"
     },
     "I": {
-      "tag": "c:iron_ingots"
+      "tag": "c:ingots/iron"
     },
     "K": {
-      "tag": "c:black_dyes"
+      "tag": "c:dyes/black"
     },
     "M": {
-      "tag": "c:magenta_dyes"
+      "tag": "c:dyes/magenta"
     },
     "Y": {
-      "tag": "c:yellow_dyes"
+      "tag": "c:dyes/yellow"
     }
   },
   "pattern": [

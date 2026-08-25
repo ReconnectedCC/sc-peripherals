@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "C": {
-      "tag": "c:cyan_dyes"
+      "tag": "c:dyes/cyan"
     },
     "E": {
       "item": "minecraft:ender_eye"
@@ -12,19 +12,19 @@
       "item": "minecraft:gold_block"
     },
     "K": {
-      "tag": "c:black_dyes"
+      "tag": "c:dyes/black"
     },
     "M": {
-      "tag": "c:magenta_dyes"
+      "tag": "c:dyes/magenta"
     },
     "P": {
       "tag": "c:glass_panes"
     },
     "R": {
-      "tag": "c:redstone_dusts"
+      "tag": "c:dusts/redstone"
     },
     "Y": {
-      "tag": "c:yellow_dyes"
+      "tag": "c:dyes/yellow"
     }
   },
   "pattern": [

@@ -9,7 +9,7 @@
       "item": "minecraft:diamond_block"
     },
     "I": {
-      "tag": "c:iron_ingots"
+      "tag": "c:ingots/iron"
     },
     "N": {
       "item": "minecraft:nether_star"

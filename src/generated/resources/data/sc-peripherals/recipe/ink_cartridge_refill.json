@@ -6,16 +6,16 @@
       "item": "sc-peripherals:empty_ink_cartridge"
     },
     {
-      "tag": "c:cyan_dyes"
+      "tag": "c:dyes/cyan"
     },
     {
-      "tag": "c:magenta_dyes"
+      "tag": "c:dyes/magenta"
     },
     {
-      "tag": "c:yellow_dyes"
+      "tag": "c:dyes/yellow"
     },
     {
-      "tag": "c:black_dyes"
+      "tag": "c:dyes/black"
     }
   ],
   "result": {
